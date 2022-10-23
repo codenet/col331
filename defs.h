@@ -4,6 +4,7 @@ struct superblock;
 struct inode;
 struct stat;
 struct context;
+struct proc;
 
 // bio.c
 void            binit(void);
@@ -31,7 +32,7 @@ int             mkdir(char *path);
 struct file*    open(char* path, int omode);
 int             unlink(char* path, char* name);
 int             isdirempty(struct inode *dp);
-int             mknod(char* path, int major, int minor);
+int             mknod(struct inode *ip, char* path, int major, int minor);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
@@ -87,9 +88,12 @@ int             cpuid(void);
 void            pinit(void);
 struct cpu*     mycpu(void);
 void            scheduler(void) __attribute__((noreturn));
+void            procdump(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
+void            pushcli(void);
+void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);
@@ -115,6 +119,7 @@ void            uartputc(int);
 
 // vm.c
 void            seginit(void);
+void            switchuvm(struct proc*);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

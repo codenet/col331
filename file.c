@@ -281,10 +281,8 @@ open(char* path, int omode)
 }
 
 int
-mknod(char* path, int major, int minor)
+mknod(struct inode *ip, char* path, int major, int minor)
 {
-  struct inode *ip;
-
   begin_op();
   if((ip = create(path, T_DEV, major, minor)) == 0){
     end_op();

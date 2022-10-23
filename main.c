@@ -46,9 +46,9 @@ main(void)
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes
   initlog(ROOTDEV);  // Initialize log
-  cli();           // disable interrupts
 
-  mknod("console", CONSOLE, CONSOLE);
+  struct inode console;
+  mknod(&console, "console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
   scheduler();     // start running processes

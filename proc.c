@@ -55,7 +55,10 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  sp = (char*)(STARTPROC + (PROCSIZE<<12));
+  sp = (char*)(STARTPROC + (PROCSIZE>>12));
+
+  // Allocate kernel stack.
+  p->kstack = sp - KSTACKSIZE;
 
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
@@ -90,7 +93,7 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PROCSIZE<<12;  // top of process memory
+  p->tf->esp = PGSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -123,7 +126,32 @@ scheduler(void)
       c->proc = p;
       p->state = RUNNING;
 
+      switchuvm(p);
       swtch(p->context);
     }
+  }
+}
+
+void
+procdump(void)
+{
+  static char *states[] = {
+  [UNUSED]    "unused",
+  [EMBRYO]    "embryo",
+  [RUNNABLE]  "runble",
+  [RUNNING]   "run   ",
+  };
+  struct proc *p;
+  char *state;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state == UNUSED)
+      continue;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+      state = states[p->state];
+    else
+      state = "???";
+    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("\n");
   }
 }

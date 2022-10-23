@@ -17,6 +17,7 @@ OBJS = \
 	fs.o\
 	file.o\
 	log.o\
+	swtch.o\
 	vm.o\
 
 # Cross-compiling (e.g., on Mac OS X)
@@ -101,8 +102,15 @@ bootblock: bootasm.S bootmain.c
 	$(OBJCOPY) -S -O binary -j .text bootblock.o bootblock
 	./sign.pl bootblock
 
-kernel: $(OBJS) entry.o kernel.ld
-	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary
+
+initcode: initcode.S
+	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
+	$(OBJCOPY) -S -O binary initcode.out initcode
+	$(OBJDUMP) -S initcode.o > initcode.asm
+
+kernel: $(OBJS) entry.o kernel.ld initcode
+	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode
 	$(OBJDUMP) -S kernel > kernel.asm
 	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
 	# $(OBJDUMP) -s kernel > kernel.dump

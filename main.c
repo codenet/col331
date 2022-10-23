@@ -50,7 +50,6 @@ main(void)
   struct inode console;
   mknod(&console, "console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
-  welcome();
-  for(;;)
-    wfi();
+  pinit();         // first process
+  scheduler();     // start running processes
 }

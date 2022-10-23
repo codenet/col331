@@ -158,6 +158,7 @@ consoleintr(int (*getc)(void))
         input.buf[input.e++ % INPUT_BUF] = c;
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+          // call myproc with the buf
           input.w = input.e;
         }
       }

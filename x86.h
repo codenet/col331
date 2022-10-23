@@ -85,6 +85,13 @@ lidt(struct gatedesc *p, int size)
   asm volatile("lidt (%0)" : : "r" (pd));
 }
 
+static inline uint
+readeflags(void)
+{
+  uint eflags;
+  asm volatile("pushfl; popl %0" : "=r" (eflags));
+  return eflags;
+}
 
 static inline void
 cli(void)
@@ -132,6 +139,15 @@ struct trapframe {
   uint ecx;
   uint eax;
 
+  // rest of trap frame
+  ushort gs;
+  ushort padding1;
+  ushort fs;
+  ushort padding2;
+  ushort es;
+  ushort padding3;
+  ushort ds;
+  ushort padding4;
   uint trapno;
 
   // below here defined by x86 hardware

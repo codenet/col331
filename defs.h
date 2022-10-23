@@ -3,6 +3,7 @@ struct rtcdate;
 struct superblock;
 struct inode;
 struct stat;
+struct context;
 
 // bio.c
 void            binit(void);
@@ -60,7 +61,6 @@ extern uchar    ioapicid;
 void            ioapicinit(void);
 
 // lapic.c
-void            cmostime(struct rtcdate *r);
 int             lapicid(void);
 extern volatile uint*    lapic;
 void            lapiceoi(void);
@@ -84,7 +84,9 @@ void            picinit(void);
 
 // proc.c
 int             cpuid(void);
+void            pinit(void);
 struct cpu*     mycpu(void);
+void            scheduler(void) __attribute__((noreturn));
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
@@ -97,6 +99,9 @@ char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
+
+// swtch.S
+void            swtch(struct context*);
 
 // trap.c
 void            idtinit(void);

@@ -8,7 +8,7 @@ ENTRY(_start)
 SECTIONS
 {
 	/* Link the kernel at this address: "." means the current address */
-        /* Must be equal to KERNLINK */
+	/* Must be equal to KERNLINK */
 	. = 0x00100000;
 
 	.text : AT(0x100000) {

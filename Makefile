@@ -22,6 +22,7 @@ OBJS = \
 	kalloc.o\
 	syscall.o\
 	sysfile.o\
+	exec.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -91,12 +92,6 @@ xv6.img: bootblock kernel
 	dd if=bootblock of=xv6.img conv=notrunc
 	dd if=kernel of=xv6.img seek=1 conv=notrunc
 
-mkfs: mkfs.c fs.h
-	gcc -Werror -Wall -o mkfs mkfs.c
-
-fs.img: mkfs *.txt
-	./mkfs fs.img *.txt
-
 bootblock: bootasm.S bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c bootasm.S
@@ -106,13 +101,11 @@ bootblock: bootasm.S bootmain.c
 	./sign.pl bootblock
 
 
-initcode: initcode.S init.c usys.S user.h
+initcode: initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
-	$(CC) $(CFLAGS) -nostdinc -I. -c init.c
-	$(CC) $(CFLAGS) -nostdinc -I. -c usys.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o init.o usys.o
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
 	$(OBJCOPY) -S -O binary initcode.out initcode
-	$(OBJDUMP) -S initcode.out > initcode.asm
+	$(OBJDUMP) -S initcode.o > initcode.asm
 
 kernel: $(OBJS) entry.o kernel.ld initcode
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode
@@ -130,13 +123,30 @@ vectors.S: vectors.pl
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
+ULIB = usys.o printf.o
+
+_%: %.o $(ULIB)
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+UPROGS=\
+	_init
+
+mkfs: mkfs.c fs.h
+	gcc -Werror -Wall -o mkfs mkfs.c
+
+fs.img: mkfs $(UPROGS)
+	./mkfs fs.img $(UPROGS)
+
 -include *.d
 
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*.o *.d *.asm *.sym bootblock \
 	kernel xv6.img vectors.S \
-	.gdbinit mkfs fs.img initcode
+	.gdbinit mkfs fs.img initcode \
+	$(UPROGS)
 
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25002)

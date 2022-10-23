@@ -20,6 +20,9 @@ void            consoleintr(int(*)(void));
 void            consoleinit(void);
 void            consputc(int);
 
+// exec.c
+int             exec(char*);
+
 // file.c
 struct file*    filealloc(void);
 void            fileclose(struct file*);
@@ -99,6 +102,8 @@ void            yield(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
+void            pushcli(void);
+void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);

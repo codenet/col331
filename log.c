@@ -28,7 +28,7 @@
 // Log appends are synchronous.
 
 // Contents of the header block, used for both the on-disk header block
-// and for keeping track of logged block numbers in memory before commit.
+// and to keep track in memory of logged block# before commit.
 struct logheader {
   int n;
   int block[LOGSIZE];
@@ -179,7 +179,7 @@ log_write(struct buf *b)
     panic("too big a transaction");
 
   for (i = 0; i < log.lh.n; i++) {
-    if (log.lh.block[i] == b->blockno)   // log absorption
+    if (log.lh.block[i] == b->blockno)   // log absorbtion
       break;
   }
   log.lh.block[i] = b->blockno;

@@ -70,9 +70,9 @@ sys_write(void)
   int n;
   char *p;
 
-  if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
+  if((argfd(0, 0, &f) < 0) || (argstr(1, &p)) < 0 || (argint(2, &n)) < 0) {
     return -1;
-  
+  }
   return filewrite(f, p, n);
 }
 
@@ -181,4 +181,14 @@ sys_open(void)
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
   return fd;
+}
+
+int
+sys_exec(void)
+{
+  char *path;
+  if(argstr(0, &path) < 0){
+    return -1;
+  }
+  return exec(path);
 }

@@ -89,7 +89,6 @@ pinit(void)
   
   initproc = p;
 
-  cprintf("Allocated process at offset %p\n", p->offset);
   memmove(p->offset, _binary_initcode_start, (int)_binary_initcode_size);
   memset(p->tf, 0, sizeof(*p->tf));
 
@@ -122,20 +121,20 @@ scheduler(void)
   c->proc = 0;
   
   for(;;){
+    // Enable interrupts on this processor.
     sti();
+
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      // Switch to chosen process.
-      cli(); 
+      // Switch to chosen process. 
       c->proc = p;
       p->state = RUNNING;
 
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
-      sti();
     }
   }
 }

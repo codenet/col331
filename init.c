@@ -4,13 +4,12 @@
 #include "user.h"
 #include "fcntl.h"
 
-int main() {
-  static char hello[] = "Hello from init.c\n";
+int
+main(void)
+{
   int fd = open("console", O_RDWR);
-  if(fd >= 0){
-    write(fd, hello, sizeof(hello) - 1);
-    close(fd);
-  }
+  printf(fd, "Hello COL%d from init.c!\n", 331);
+  close(fd);
 
-  while(1);
+  // exec("/init");
 }

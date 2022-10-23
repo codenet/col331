@@ -25,8 +25,12 @@ void            fileinit(void);
 int             fileread(struct file*, char*, int n);
 int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
+<<<<<<< HEAD
 int             mkdir(char *path, struct inode *ip);
 struct inode*   create(char *path, short type, short major, short minor);
+=======
+int             mkdir(char *path);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 struct file*    open(char* path, int omode);
 int             unlink(char* path, char* name);
 int             isdirempty(struct inode *dp);
@@ -67,6 +71,15 @@ void            lapicinit(void);
 void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
+<<<<<<< HEAD
+=======
+// log.c
+void            initlog(int dev);
+void            log_write(struct buf*);
+void            begin_op();
+void            end_op();
+
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 // mp.c
 extern int      ismp;
 void            mpinit(void);

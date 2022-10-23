@@ -16,6 +16,10 @@ OBJS = \
 	ide.o\
 	fs.o\
 	file.o\
+<<<<<<< HEAD
+=======
+	log.o\
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

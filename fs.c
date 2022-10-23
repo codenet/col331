@@ -44,7 +44,11 @@ bzero(int dev, int bno)
 
   bp = bread(dev, bno);
   memset(bp->data, 0, BSIZE);
+<<<<<<< HEAD
   bwrite(bp);
+=======
+  log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   brelse(bp);
 }
 
@@ -64,7 +68,11 @@ balloc(uint dev)
       m = 1 << (bi % 8);
       if((bp->data[bi/8] & m) == 0){  // Is block free?
         bp->data[bi/8] |= m;  // Mark block in use.
+<<<<<<< HEAD
         bwrite(bp);
+=======
+        log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
         brelse(bp);
         bzero(dev, b + bi);
         return b + bi;
@@ -89,7 +97,11 @@ bfree(int dev, uint b)
   if((bp->data[bi/8] & m) == 0)
     panic("freeing free block");
   bp->data[bi/8] &= ~m;
+<<<<<<< HEAD
   bwrite(bp);
+=======
+  log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   brelse(bp);
 }
 
@@ -139,7 +151,11 @@ ialloc(uint dev, short type)
     if(dip->type == 0){  // a free inode
       memset(dip, 0, sizeof(*dip));
       dip->type = type;
+<<<<<<< HEAD
       bwrite(bp);   // mark it allocated on the disk
+=======
+      log_write(bp);   // mark it allocated on the disk
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
       brelse(bp);
       return iget(dev, inum);
     }
@@ -186,7 +202,11 @@ iupdate(struct inode *ip)
   dip->nlink = ip->nlink;
   dip->size = ip->size;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+<<<<<<< HEAD
   bwrite(bp);
+=======
+  log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   brelse(bp);
 }
 
@@ -278,7 +298,11 @@ bmap(struct inode *ip, uint bn)
     a = (uint*)bp->data;
     if((addr = a[bn]) == 0){
       a[bn] = addr = balloc(ip->dev);
+<<<<<<< HEAD
       bwrite(bp);
+=======
+      log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
     }
     brelse(bp);
     return addr;
@@ -323,6 +347,10 @@ itrunc(struct inode *ip)
 }
 
 // Copy stat information from inode.
+<<<<<<< HEAD
+=======
+// Caller must hold ip->lock.
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 void
 stati(struct inode *ip, struct stat *st)
 {
@@ -341,7 +369,11 @@ readi(struct inode *ip, char *dst, uint off, uint n)
   uint tot, m;
   struct buf *bp;
 
+<<<<<<< HEAD
   if(off > ip->size || off + n < off)
+=======
+  if(off > ip->size || off + n < off || ip->nlink < 1)
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
     return -1;
   if(off + n > ip->size)
     n = ip->size - off;
@@ -372,7 +404,11 @@ writei(struct inode *ip, char *src, uint off, uint n)
     bp = bread(ip->dev, bmap(ip, off/BSIZE));
     m = min(n - tot, BSIZE - off%BSIZE);
     memmove(bp->data + off%BSIZE, src, m);
+<<<<<<< HEAD
     bwrite(bp);
+=======
+    log_write(bp);
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
     brelse(bp);
   }
 

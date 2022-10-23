@@ -14,7 +14,11 @@ static inline void
 welcome(void) {
   // Create and write /foo/hello.txt
 
+<<<<<<< HEAD
   create("/foo", T_DIR, 0, 0);
+=======
+  mkdir("/foo");
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   struct file* gtxt;
   if((gtxt = open("/foo/hello.txt", O_CREATE | O_WRONLY)) == 0){
     panic("Failed to create /foo/hello.txt");
@@ -69,6 +73,10 @@ main(void)
   idtinit();       // load idt register
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes
+<<<<<<< HEAD
+=======
+  initlog(ROOTDEV);  // Initialize log
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   welcome();       // print welcome message
   for(;;)
     wfi();

@@ -55,7 +55,13 @@ fileclose(struct file *f)
   f->type = FD_NONE;
 
   if(ff.type == FD_INODE){
+<<<<<<< HEAD
     iput(ff.ip);
+=======
+    begin_op();
+    iput(ff.ip);
+    end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   }
 }
 
@@ -105,9 +111,17 @@ filewrite(struct file *f, char *addr, int n)
       if(n1 > max)
         n1 = max;
 
+<<<<<<< HEAD
       iread(f->ip);
       if ((r = writei(f->ip, addr + i, f->off, n1)) > 0)
         f->off += r;
+=======
+			begin_op();
+      iread(f->ip);
+      if ((r = writei(f->ip, addr + i, f->off, n1)) > 0)
+        f->off += r;
+      end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 
       if(r < 0)
         break;
@@ -143,7 +157,13 @@ unlink(char* path, char* name)
   struct dirent de;
   uint off;
 
+<<<<<<< HEAD
   if((dp = nameiparent(path, name)) == 0){
+=======
+	begin_op();
+  if((dp = nameiparent(path, name)) == 0){
+    end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
     return -1;
   }
 
@@ -177,14 +197,26 @@ unlink(char* path, char* name)
   iupdate(ip);
   iput(ip);
 
+<<<<<<< HEAD
+=======
+  end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
   return 0;
 
 bad:
   iput(dp);
+<<<<<<< HEAD
   return -1;
 }
 
 struct inode*
+=======
+  end_op();
+  return -1;
+}
+
+static struct inode*
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 create(char *path, short type, short major, short minor)
 {
   struct inode *ip, *dp;
@@ -234,18 +266,35 @@ open(char* path, int omode)
 {
   struct inode *ip;
 
+<<<<<<< HEAD
   if(omode & O_CREATE){
     ip = create(path, T_FILE, 0, 0);
     if(ip == 0){
+=======
+  begin_op();
+
+  if(omode & O_CREATE){
+    ip = create(path, T_FILE, 0, 0);
+    if(ip == 0){
+      end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
       return 0;
     }
   } else {
     if((ip = namei(path)) == 0){
+<<<<<<< HEAD
+=======
+      end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
       return 0;
     }
     iread(ip);
     if(ip->type == T_DIR && omode != O_RDONLY){
       iput(ip);
+<<<<<<< HEAD
+=======
+      end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
       return 0;
     }
   }
@@ -253,6 +302,10 @@ open(char* path, int omode)
   struct file* f;
   if((f = filealloc()) == 0) { 
     iput(ip);
+<<<<<<< HEAD
+=======
+    end_op();
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
     return 0;
   }
 
@@ -261,5 +314,24 @@ open(char* path, int omode)
   f->off = 0;
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+<<<<<<< HEAD
   return f;
+=======
+  end_op();
+  return f;
+}
+
+int mkdir(char *path)
+{
+  struct inode *ip;
+
+  begin_op();
+  if((ip = create(path, T_DIR, 0, 0)) == 0){
+    end_op();
+    return -1;
+  }
+  iput(ip);
+  end_op();
+  return 0;
+>>>>>>> ea141d8 (OS that boots and exits gracefully!)
 }

@@ -1,5 +1,37 @@
+struct rtcdate;
+
 // console.c
 void            cprintf(char*, ...);
+void            panic(char*) __attribute__((noreturn));
+
+// ioapic.c
+void            ioapicenable(int irq, int cpu);
+extern uchar    ioapicid;
+void            ioapicinit(void);
+
+// lapic.c
+void            cmostime(struct rtcdate *r);
+int             lapicid(void);
+extern volatile uint*    lapic;
+void            lapiceoi(void);
+void            lapicinit(void);
+void            lapicstartap(uchar, uint);
+void            microdelay(int);
+
+// mp.c
+extern int      ismp;
+void            mpinit(void);
+
+// picirq.c
+void            picenable(int);
+void            picinit(void);
+
+// proc.c
+int             cpuid(void);
+struct cpu*     mycpu(void);
+
+// spinlock.c
+void            getcallerpcs(void*, uint*);
 
 // string.c
 int             memcmp(const void*, const void*, uint);
@@ -13,3 +45,6 @@ char*           strncpy(char*, const char*, int);
 // uart.c
 void            uartinit(void);
 void            uartputc(int);
+
+// number of elements in fixed-size array
+#define NELEM(x) (sizeof(x)/sizeof((x)[0]))

@@ -1,7 +1,14 @@
-OBJS = main.o\
-				console.o\
-				uart.o\
-				string.o
+OBJS = \
+	console.o\
+	ioapic.o\
+	lapic.o\
+	main.o\
+	mp.o\
+	picirq.o\
+	uart.o\
+	string.o\
+	proc.o\
+	spinlock.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -9,25 +16,12 @@ OBJS = main.o\
 # Using native tools (e.g., on X86 Linux)
 #TOOLPREFIX = 
 
-# For ARM based MacOS machines
-# Workaround for newer gcc versions
-MAC_CCFLAGS := $(shell if [[ "$(shell uname -s)" == "Darwin" && "$(shell uname -m)" == "arm64" ]]; then \
-	echo "-Wno-error=infinite-recursion -Wno-error=array-bounds"; \
-	else \
-	echo ""; \
-fi)
-
-
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
 TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \
 	then echo 'i386-jos-elf-'; \
 	elif objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
 	then echo ''; \
-	elif i686-elf-objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
-	then echo 'i686-elf-'; \
-	elif i386-elf-objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
-	then echo 'i386-elf-'; \
 	else echo "***" 1>&2; \
 	echo "*** Error: Couldn't find an i386-*-elf version of GCC/binutils." 1>&2; \
 	echo "*** Is the directory with i386-jos-elf-gcc in your PATH?" 1>&2; \
@@ -65,7 +59,6 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
-CFLAGS += $(MAC_CCFLAGS)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
@@ -97,6 +90,7 @@ kernel: $(OBJS) entry.o kernel.ld
 	$(OBJDUMP) -S kernel > kernel.asm
 	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
 
+
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
 # details:
@@ -107,10 +101,10 @@ kernel: $(OBJS) entry.o kernel.ld
 
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
-	*.o *.d *.asm *.sym bootblock entryother \
-	kernel xv6.img .gdbinit
+	*.o *.d *.asm *.sym bootblock \
+	kernel xv6.img \
+	.gdbinit
 
-# run in emulators
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 # QEMU's gdb stub command line changed in 0.11
@@ -118,7 +112,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
-	CPUS := 1
+CPUS := 1
 endif
 
 # For debugging

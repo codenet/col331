@@ -19,6 +19,7 @@
 # }
 
 #include "asm.h"
+#include "mmu.h"
 #include "param.h"
 
 # Multiboot header.  Data to direct multiboot loader.

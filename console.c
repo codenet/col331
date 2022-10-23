@@ -7,6 +7,7 @@
 #include "x86.h"
 
 static void consputc(int);
+static int panicked = 0;
 
 static void
 printint(int xx, int base, int sign)
@@ -33,7 +34,7 @@ printint(int xx, int base, int sign)
     consputc(buf[i]);
 }
 
-// Print to the console. Only understands %d, %x, %p, %s.
+// Print to the console. only understands %d, %x, %p, %s.
 void
 cprintf(char *fmt, ...)
 {
@@ -78,7 +79,25 @@ cprintf(char *fmt, ...)
       break;
     }
   }
+}
 
+void
+panic(char *s)
+{
+  int i;
+  uint pcs[10];
+
+  cli();
+  // cons.locking = 0;
+  // use lapiccpunum so that we can call panic from mycpu()
+  cprintf("lapicid %d: panic: ", lapicid());
+  cprintf(s);
+  cprintf("\n");
+  getcallerpcs(&s, pcs);
+  for(i=0; i<10; i++)
+    cprintf(" %p", pcs[i]);
+  panicked = 1; // freeze other CPU
+  for(;;);
 }
 
 #define BACKSPACE 0x100

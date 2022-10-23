@@ -56,3 +56,17 @@ stosl(void *addr, int data, int cnt)
                "0" (addr), "1" (cnt), "a" (data) :
                "memory", "cc");
 }
+
+static inline uint
+readeflags(void)
+{
+  uint eflags;
+  asm volatile("pushfl; popl %0" : "=r" (eflags));
+  return eflags;
+}
+
+static inline void
+cli(void)
+{
+  asm volatile("cli");
+}

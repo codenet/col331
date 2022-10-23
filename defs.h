@@ -1,7 +1,8 @@
 struct buf;
 struct rtcdate;
-struct stat;
 struct superblock;
+struct inode;
+struct stat;
 
 // bio.c
 void            binit(void);
@@ -15,6 +16,14 @@ void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
 void            consoleintr(int(*)(void));
 void            consputc(int);
+
+// fs.c
+void            readsb(int dev, struct superblock *sb);
+void            iinit(int dev);
+void            iread(struct inode*);
+struct inode*   iget(uint dev, uint inum);
+int             readi(struct inode*, char*, uint, uint);
+void            stati(struct inode*, struct stat*);
 
 // ide.c
 void            ideinit(void);

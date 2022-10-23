@@ -29,7 +29,7 @@ struct mpconf {         // configuration table header
 struct mpproc {         // processor table entry
   uchar type;                   // entry type (0)
   uchar apicid;                 // local APIC id
-  uchar version;                // local APIC version
+  uchar version;                // local APIC verison
   uchar flags;                  // CPU flags
     #define MPBOOT 0x02           // This proc is the bootstrap processor.
   uchar signature[4];           // CPU signature
@@ -51,6 +51,3 @@ struct mpioapic {       // I/O APIC table entry
 #define MPIOAPIC  0x02  // One per I/O APIC
 #define MPIOINTR  0x03  // One per bus interrupt source
 #define MPLINTR   0x04  // One per system interrupt source
-
-//PAGEBREAK!
-// Blank page.

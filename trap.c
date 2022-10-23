@@ -50,8 +50,17 @@ trap(struct trapframe *tf)
     break;
 
   default:
-    cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
-            tf->trapno, cpuid(), tf->eip, rcr2());
-    panic("trap");
+    if(myproc() == 0 || (tf->cs&3) == 0){
+      // In kernel, it must be our mistake.
+      cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
+              tf->trapno, cpuid(), tf->eip, rcr2());
+      panic("trap");
+    }
   }
+
+  // Force process to give up CPU on clock tick.
+  // If interrupts were on while locks held, would need to check nlock.
+  if(myproc() && myproc()->state == RUNNING &&
+    tf->trapno == T_IRQ0+IRQ_TIMER)
+    yield();
 }

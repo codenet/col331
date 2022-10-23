@@ -92,11 +92,15 @@ void            picinit(void);
 int             cpuid(void);
 void            pinit(void);
 struct cpu*     mycpu(void);
+struct proc*    myproc();
 void            scheduler(void) __attribute__((noreturn));
 void            procdump(void);
+void            yield(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
+void            pushcli(void);
+void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);
@@ -108,7 +112,7 @@ int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
 
 // swtch.S
-void            swtch(struct context*);
+void            swtch(struct context**, struct context*);
 
 // trap.c
 void            idtinit(void);

@@ -111,6 +111,8 @@ pinit(void)
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
+//  - eventually that process transfers control
+//      via swtch back to the scheduler.
 void
 scheduler(void)
 {
@@ -132,9 +134,40 @@ scheduler(void)
       p->state = RUNNING;
 
       switchuvm(p);
-      swtch(p->context);
+      swtch(&(c->scheduler), p->context);
     }
   }
+}
+
+// Enter scheduler.  Must hold only ptable.lock
+// and have changed proc->state. Saves and restores
+// intena because intena is a property of this
+// kernel thread, not this CPU. It should
+// be proc->intena and proc->ncli, but that would
+// break in the few places where a lock is held but
+// there's no process.
+void
+sched(void)
+{
+  int intena;
+  struct cpu* c = mycpu();
+  struct proc *p = myproc();
+
+  if(p->state == RUNNING)
+    panic("sched running");
+  if(readeflags()&FL_IF)
+    panic("sched interruptible");
+  intena = c->intena;
+  swtch(&p->context, c->scheduler);
+  c->intena = intena;
+}
+
+// Give up the CPU for one scheduling round.
+void
+yield(void)
+{
+  myproc()->state = RUNNABLE;
+  sched();
 }
 
 void

@@ -19,6 +19,7 @@ OBJS = \
 	log.o\
 	swtch.o\
 	vm.o\
+	kalloc.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

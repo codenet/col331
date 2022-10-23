@@ -13,26 +13,11 @@
 
 extern char end[]; // first address after kernel loaded from ELF file
 
-static inline void
-welcome(void) {
-  struct file* c;
-
-  if((c = open("console", O_RDWR)) == 0) {
-    panic("Failed to open console");
-  }
-  filewrite(c, "\nEnter your name: ", 18);
-  char name[20];
-  int namelen = fileread(c, name, 20);
-  filewrite(c, "Nice to meet you! ", 18);
-  filewrite(c, name, namelen);
-  filewrite(c, "BYE!\n", 6);
-  fileclose(c);
-}
-
 // Bootstrap processor starts running C code here.
 int
 main(void)
 {
+  kinit(end, P2V(PHYSTOP)); // phys page allocator
   mpinit();        // detect other processors
   lapicinit();     // interrupt controller
   picinit();       // disable pic
@@ -46,11 +31,11 @@ main(void)
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes
   initlog(ROOTDEV);  // Initialize log
-  cli();           // disable interrupts
 
   struct inode console;
   mknod(&console, "console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
+  pinit();         // another process
   scheduler();     // start running processes
 }

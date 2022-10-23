@@ -61,6 +61,11 @@ void            ioapicenable(int irq, int cpu);
 extern uchar    ioapicid;
 void            ioapicinit(void);
 
+// kalloc.c
+char*           kalloc(void);
+void            kfree(char*);
+void            kinit(void*, void*);
+
 // lapic.c
 int             lapicid(void);
 extern volatile uint*    lapic;
@@ -92,6 +97,8 @@ void            procdump(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
+void            pushcli(void);
+void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);

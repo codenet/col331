@@ -55,7 +55,12 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  sp = (char*)(STARTPROC + (PROCSIZE<<12));
+  if((p->offset = kalloc()) == 0){
+    p->state = UNUSED;
+    return 0;
+  }
+
+  sp = (char*)(p->offset + PGSIZE);
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;
@@ -82,9 +87,9 @@ pinit(void)
   p = allocproc();
   
   initproc = p;
-  int offset = STARTPROC;
-  void* dst = (void*)offset;
-  memmove(dst, _binary_initcode_start, (int)_binary_initcode_size);
+
+  cprintf("Allocated process at offset %p\n", p->offset);
+  memmove(p->offset, _binary_initcode_start, (int)_binary_initcode_size);
   memset(p->tf, 0, sizeof(*p->tf));
 
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;

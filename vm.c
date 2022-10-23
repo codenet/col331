@@ -20,8 +20,6 @@ seginit(void)
   c = &cpus[cpuid()];
   c->gdt[SEG_KCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, 0);
   c->gdt[SEG_KDATA] = SEG(STA_W, 0, 0xffffffff, 0);
-  c->gdt[SEG_UCODE] = SEG(STA_X|STA_R, STARTPROC, (PROCSIZE -1 ) << 12, DPL_USER);
-  c->gdt[SEG_UDATA] = SEG(STA_W, STARTPROC, (PROCSIZE -1)<< 12, DPL_USER);
   lgdt(c->gdt, sizeof(c->gdt));
 }
 
@@ -33,6 +31,11 @@ switchuvm(struct proc *p)
   if(p->kstack == 0)
     panic("switchuvm: no kstack");
 
+  pushcli();
+  mycpu()->gdt[SEG_UCODE] = SEG(STA_X|STA_R, p->offset, (PROCSIZE << 12)-1, DPL_USER);
+  mycpu()->gdt[SEG_UDATA] = SEG(STA_W, p->offset, (PROCSIZE << 12)-1, DPL_USER);
+  lgdt(mycpu()->gdt, sizeof(mycpu()->gdt));
+
   mycpu()->gdt[SEG_TSS] = SEG16(STS_T32A, &mycpu()->ts,
                                 sizeof(mycpu()->ts)-1, 0);
   mycpu()->gdt[SEG_TSS].s = 0;
@@ -42,4 +45,5 @@ switchuvm(struct proc *p)
   // forbids I/O instructions (e.g., inb and outb) from user space
   mycpu()->ts.iomb = (ushort) 0xFFFF;
   ltr(SEG_TSS << 3);
+  popcli();
 }

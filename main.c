@@ -12,46 +12,18 @@ extern char end[]; // first address after kernel loaded from ELF file
 
 static inline void
 welcome(void) {
-  // Create and write /foo/hello.txt
+  struct file* c;
 
-  mkdir("/foo");
-  struct file* gtxt;
-  if((gtxt = open("/foo/hello.txt", O_CREATE | O_WRONLY)) == 0){
-    panic("Failed to create /foo/hello.txt");
+  if((c = open("console", O_RDWR)) == 0) {
+    panic("Failed to open console");
   }
-  int n = filewrite(gtxt, "hello\0", 6);
-  cprintf("Wrote %d characters to /foo/hello.txt\n", n);
-  fileclose(gtxt);
-
-  if((gtxt=open("/foo/hello.txt", O_RDONLY)) == 0) {
-    panic("Unable to open /foo/hello.txt");
-  }
-  char welcome[512];
-  n = fileread(gtxt, welcome, 6);
-  cprintf("Read %d chars from /foo/hello.txt: %s\n", n, welcome);
-  fileclose(gtxt);
-
-	// Delete /foo/hello.txt
-  char name[DIRSIZ];
- 
-  unlink("/foo/hello.txt", name);
-  struct inode* foo = namei("/foo");
-  if(!isdirempty(foo)) {
-    panic("/foo should be empty");
-  }
-  iput(foo);
-  if((gtxt = open("/foo/hello.txt", O_RDONLY)) != 0) {
-    panic("Could open /foo/hello.txt after unlinking");
-  }
-  
-  // Print welcome message
-  struct file* wtxt;
-  if((wtxt=open("/welcome.txt", O_RDONLY)) == 0) {
-    panic("Unable to open /welcome.txt");
-  }
-  n = fileread(wtxt, welcome, 512);
-  cprintf("Read %d chars from /welcome.txt:\n %s", n, welcome);
-  fileclose(wtxt);
+  filewrite(c, "\nEnter your name: ", 18);
+  char name[20];
+  int namelen = fileread(c, name, 20);
+  filewrite(c, "Nice to meet you! ", 18);
+  filewrite(c, name, namelen);
+  filewrite(c, "BYE!\n", 6);
+  fileclose(c);
 }
 
 // Bootstrap processor starts running C code here.
@@ -62,6 +34,7 @@ main(void)
   lapicinit();     // interrupt controller
   picinit();       // disable pic
   ioapicinit();    // another interrupt controller
+  consoleinit();   // console hardware
   uartinit();      // serial port
   ideinit();       // disk 
   tvinit();        // trap vectors
@@ -70,6 +43,9 @@ main(void)
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes
   initlog(ROOTDEV);  // Initialize log
+
+  struct inode console;
+  mknod(&console, "console", CONSOLE, CONSOLE);
   welcome();       // print welcome message
   for(;;)
     wfi();

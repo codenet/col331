@@ -7,6 +7,8 @@
 #include "param.h"
 #include "x86.h"
 #include "traps.h"
+#include "fs.h"
+#include "file.h"
 
 static int panicked = 0;
 
@@ -162,4 +164,48 @@ consoleintr(int (*getc)(void))
       break;
     }
   }
+}
+
+
+int
+consoleread(struct inode *ip, char *dst, int n)
+{
+  uint target;
+  int c;
+
+  target = n;
+  while(n > 0){
+    while(input.r == input.w);
+    c = input.buf[input.r++ % INPUT_BUF];
+    if(c == C('D')){  // EOF
+      if(n < target){
+        // Save ^D for next time, to make sure
+        // caller gets a 0-byte result.
+        input.r--;
+      }
+      break;
+    }
+    *dst++ = c;
+    --n;
+    if(c == '\n')
+      break;
+  }
+
+  return target - n;
+}
+
+int
+consolewrite(struct inode *ip, char *buf, int n)
+{
+  int i;
+  for(i = 0; i < n; i++)
+    consputc(buf[i] & 0xff);
+  return n;
+}
+
+void
+consoleinit(void)
+{
+  devsw[CONSOLE].write = consolewrite;
+  devsw[CONSOLE].read = consoleread;
 }

@@ -1,4 +1,5 @@
 struct buf;
+struct rtcdate;
 struct superblock;
 struct inode;
 struct stat;
@@ -14,12 +15,14 @@ void            cprintf(char*, ...);
 void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
 void            consoleintr(int(*)(void));
+void            consoleinit(void);
 void            consputc(int);
 
 // file.c
 struct file*    filealloc(void);
 void            fileclose(struct file*);
 struct file*    filedup(struct file*);
+void            fileinit(void);
 int             fileread(struct file*, char*, int n);
 int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
@@ -27,6 +30,7 @@ int             mkdir(char *path);
 struct file*    open(char* path, int omode);
 int             unlink(char* path, char* name);
 int             isdirempty(struct inode *dp);
+int             mknod(struct inode *ip, char* path, int major, int minor);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
@@ -56,10 +60,12 @@ extern uchar    ioapicid;
 void            ioapicinit(void);
 
 // lapic.c
+void            cmostime(struct rtcdate *r);
 int             lapicid(void);
 extern volatile uint*    lapic;
 void            lapiceoi(void);
 void            lapicinit(void);
+void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
@@ -73,6 +79,7 @@ extern int      ismp;
 void            mpinit(void);
 
 // picirq.c
+void            picenable(int);
 void            picinit(void);
 
 // proc.c

@@ -10,6 +10,7 @@
 #include "stat.h"
 #include "fcntl.h"
 
+struct devsw devsw[NDEV];
 struct {
   struct file file[NFILE];
 } ftable;
@@ -277,6 +278,19 @@ open(char* path, int omode)
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
   end_op();
   return f;
+}
+
+int
+mknod(struct inode *ip, char* path, int major, int minor)
+{
+  begin_op();
+  if((ip = create(path, T_DEV, major, minor)) == 0){
+    end_op();
+    return -1;
+  }
+  iput(ip);
+  end_op();
+  return 0;
 }
 
 int mkdir(char *path)

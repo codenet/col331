@@ -49,7 +49,7 @@ bootmain(void)
 void
 waitdisk(void)
 {
-  // Wait for disk to be ready.
+  // Wait for disk ready.
   while((inb(0x1F7) & 0xC0) != 0x40)
     ;
 }

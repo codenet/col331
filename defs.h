@@ -2,6 +2,7 @@ struct rtcdate;
 
 // console.c
 void            cprintf(char*, ...);
+void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
 
 // ioapic.c
@@ -13,8 +14,10 @@ void            ioapicinit(void);
 void            cmostime(struct rtcdate *r);
 int             lapicid(void);
 extern volatile uint*    lapic;
+void            lapiceoi(void);
 void            lapicinit(void);
 void            lapicstartap(uchar, uint);
+void            microdelay(int);
 
 // mp.c
 extern int      ismp;
@@ -39,6 +42,11 @@ char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
+
+// trap.c
+void            idtinit(void);
+extern uint     ticks;
+void            tvinit(void);
 
 // uart.c
 void            uartinit(void);

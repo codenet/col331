@@ -19,7 +19,7 @@ mycpu(void)
   int apicid, i;
   
   if(readeflags()&FL_IF)
-    panic("mycpu called with interrupts enabled");
+    panic("mycpu called with interrupts enabled\n");
   
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
@@ -28,5 +28,5 @@ mycpu(void)
     if (cpus[i].apicid == apicid)
       return &cpus[i];
   }
-  panic("unknown apicid");
+  panic("unknown apicid\n");
 }

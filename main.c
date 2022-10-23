@@ -2,15 +2,7 @@
 #include "defs.h"
 #include "x86.h"
 
-void
-halt(void)
-{
-  cprintf("Bye COL%d!\n\0", 331);
-  outw(0x604, 0x2000);
-  // For older versions of QEMU, 
-  outw(0xB004, 0x2000);
-}
-
+extern char end[]; // first address after kernel loaded from ELF file
 
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
@@ -23,6 +15,9 @@ main(void)
   picinit();       // disable pic
   ioapicinit();    // another interrupt controller
   uartinit();      // serial port
-  cprintf("Finished setting up PICs!\n\0");
-  halt();
+  tvinit();        // trap vectors
+  idtinit();       // load idt register
+  sti();
+  for(;;)
+    wfi();
 }

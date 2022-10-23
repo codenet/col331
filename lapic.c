@@ -85,7 +85,7 @@ lapicinit(void)
   // Ack any outstanding interrupts.
   lapicw(EOI, 0);
 
-  // Send an Init Level De-Assert to synchronise arbitration IDs.
+  // Send an Init Level De-Assert to synchronise arbitration ID's.
   lapicw(ICRHI, 0);
   lapicw(ICRLO, BCAST | INIT | LEVEL);
   while(lapic[ICRLO] & DELIVS)
@@ -101,4 +101,19 @@ lapicid(void)
   if (!lapic)
     return 0;
   return lapic[ID] >> 24;
+}
+
+// Acknowledge interrupt.
+void
+lapiceoi(void)
+{
+  if(lapic)
+    lapicw(EOI, 0);
+}
+
+// Spin for a given number of microseconds.
+// On real hardware would want to tune this dynamically.
+void
+microdelay(int us)
+{
 }

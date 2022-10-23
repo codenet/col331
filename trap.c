@@ -1,8 +1,8 @@
 #include "types.h"
 #include "defs.h"
-// #include "param.h"
+#include "param.h"
 #include "mmu.h"
-// #include "proc.h"
+#include "proc.h"
 #include "x86.h"
 #include "traps.h"
 
@@ -33,6 +33,10 @@ trap(struct trapframe *tf)
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     ticks++;
+    lapiceoi();
+    break;
+  case T_IRQ0 + IRQ_IDE:
+    ideintr();
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_COM1:

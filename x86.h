@@ -106,6 +106,11 @@ rcr2(void)
   return val;
 }
 
+static inline void
+noop(void)
+{
+  asm volatile("nop");
+}
 
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().

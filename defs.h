@@ -1,10 +1,23 @@
+struct buf;
 struct rtcdate;
+
+// bio.c
+void            binit(void);
+struct buf*     bread(uint, uint);
+void            bwrite(struct buf*);
+void            brelse(struct buf *b);
 
 // console.c
 void            cprintf(char*, ...);
 void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
 void            consoleintr(int(*)(void));
+void            consputc(int);
+
+// ide.c
+void            ideinit(void);
+void            ideintr(void);
+void            iderw(struct buf*);
 
 // ioapic.c
 void            ioapicenable(int irq, int cpu);

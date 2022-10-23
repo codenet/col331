@@ -35,6 +35,45 @@ readsb(int dev, struct superblock *sb)
   brelse(bp);
 }
 
+// Zero a block.
+static void
+bzero(int dev, int bno)
+{
+  struct buf *bp;
+
+  bp = bread(dev, bno);
+  memset(bp->data, 0, BSIZE);
+  bwrite(bp);
+  brelse(bp);
+}
+
+// Blocks.
+
+// Allocate a zeroed disk block.
+static uint
+balloc(uint dev)
+{
+  int b, bi, m;
+  struct buf *bp;
+
+  bp = 0;
+  for(b = 0; b < sb.size; b += BPB){
+    bp = bread(dev, BBLOCK(b, sb));
+    for(bi = 0; bi < BPB && b + bi < sb.size; bi++){
+      m = 1 << (bi % 8);
+      if((bp->data[bi/8] & m) == 0){  // Is block free?
+        bp->data[bi/8] |= m;  // Mark block in use.
+        bwrite(bp);
+        brelse(bp);
+        bzero(dev, b + bi);
+        return b + bi;
+      }
+    }
+    brelse(bp);
+  }
+  panic("balloc: out of blocks");
+}
+
 // Inodes.
 //
 // An inode describes a single unnamed file.
@@ -65,10 +104,56 @@ iinit(int dev)
           sb.bmapstart);
 }
 
-void
+// Allocate an inode on device dev.
+// Mark it as allocated by  giving it type type.
+// Returns an unlocked but allocated and referenced inode.
+struct inode*
+ialloc(uint dev, short type)
+{
+  int inum;
+  struct buf *bp;
+  struct dinode *dip;
+
+  for(inum = 1; inum < sb.ninodes; inum++){
+    bp = bread(dev, IBLOCK(inum, sb));
+    dip = (struct dinode*)bp->data + inum%IPB;
+    if(dip->type == 0){  // a free inode
+      memset(dip, 0, sizeof(*dip));
+      dip->type = type;
+      bwrite(bp);   // mark it allocated on the disk
+      brelse(bp);
+      return iget(dev, inum);
+    }
+    brelse(bp);
+  }
+  panic("ialloc: no inodes");
+}
+
+static void
 irelse(struct inode *ip)
 {
   ip->ref--;
+}
+
+// Copy a modified in-memory inode to disk.
+// Must be called after every change to an ip->xxx field
+// that lives on disk, since i-node cache is write-through.
+void
+iupdate(struct inode *ip)
+{
+  struct buf *bp;
+  struct dinode *dip;
+
+  bp = bread(ip->dev, IBLOCK(ip->inum, sb));
+  dip = (struct dinode*)bp->data + ip->inum%IPB;
+  dip->type = ip->type;
+  dip->major = ip->major;
+  dip->minor = ip->minor;
+  dip->nlink = ip->nlink;
+  dip->size = ip->size;
+  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+  bwrite(bp);
+  brelse(bp);
 }
 
 // Find the inode with number inum on device dev
@@ -141,18 +226,28 @@ iread(struct inode *ip)
 static uint
 bmap(struct inode *ip, uint bn)
 {
+  uint addr, *a;
   struct buf *bp;
 
   if(bn < NDIRECT){
-    return ip->addrs[bn];
+    if((addr = ip->addrs[bn]) == 0)
+      ip->addrs[bn] = addr = balloc(ip->dev);
+    return addr;
   }
   bn -= NDIRECT;
 
   if(bn < NINDIRECT){
-    // Load indirect block
-    bp = bread(ip->dev, ip->addrs[NDIRECT]);
-    uint *a = (uint*)bp->data;
-    return a[bn];
+    // Load indirect block, allocating if necessary.
+    if((addr = ip->addrs[NDIRECT]) == 0)
+      ip->addrs[NDIRECT] = addr = balloc(ip->dev);
+    bp = bread(ip->dev, addr);
+    a = (uint*)bp->data;
+    if((addr = a[bn]) == 0){
+      a[bn] = addr = balloc(ip->dev);
+      bwrite(bp);
+    }
+    brelse(bp);
+    return addr;
   }
 
   panic("bmap: out of range");
@@ -192,6 +287,34 @@ readi(struct inode *ip, char *dst, uint off, uint n)
   return n;
 }
 
+// Write data to inode.
+// Caller must hold ip->lock.
+int
+writei(struct inode *ip, char *src, uint off, uint n)
+{
+  uint tot, m;
+  struct buf *bp;
+
+  if(off > ip->size || off + n < off)
+    return -1;
+  if(off + n > MAXFILE*BSIZE)
+    return -1;
+
+  for(tot=0; tot<n; tot+=m, off+=m, src+=m){
+    bp = bread(ip->dev, bmap(ip, off/BSIZE));
+    m = min(n - tot, BSIZE - off%BSIZE);
+    memmove(bp->data + off%BSIZE, src, m);
+    bwrite(bp);
+    brelse(bp);
+  }
+
+  if(n > 0 && off > ip->size){
+    ip->size = off;
+    iupdate(ip);
+  }
+  return n;
+}
+
 // Directories
 
 int
@@ -224,6 +347,37 @@ dirlookup(struct inode *dp, char *name, uint *poff)
       return iget(dp->dev, inum);
     }
   }
+
+  return 0;
+}
+
+
+// Write a new directory entry (name, inum) into the directory dp.
+int
+dirlink(struct inode *dp, char *name, uint inum)
+{
+  int off;
+  struct dirent de;
+  struct inode *ip;
+
+  // Check that name is not present.
+  if((ip = dirlookup(dp, name, 0)) != 0){
+    irelse(ip);
+    return -1;
+  }
+
+  // Look for an empty dirent.
+  for(off = 0; off < dp->size; off += sizeof(de)){
+    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+      panic("dirlink read");
+    if(de.inum == 0)
+      break;
+  }
+
+  strncpy(de.name, name, DIRSIZ);
+  de.inum = inum;
+  if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+    panic("dirlink");
 
   return 0;
 }
@@ -270,7 +424,7 @@ skipelem(char *path, char *name)
 // Look up and return the inode for a path name.
 // If parent != 0, return the inode for the parent and copy the final
 // path element into name, which must have room for DIRSIZ bytes.
-// Must be called inside a transaction since it calls irelse().
+// Must be called inside a transaction since it calls iput().
 static struct inode*
 namex(char *path, int nameiparent, char *name)
 {
@@ -286,7 +440,7 @@ namex(char *path, int nameiparent, char *name)
     }
     if(nameiparent && *path == '\0'){
       // Stop one level early.
-      
+      irelse(ip);
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){

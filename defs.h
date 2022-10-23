@@ -24,11 +24,13 @@ void            iread(struct inode*);
 struct inode*   iget(uint dev, uint inum);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
-void            irelse(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);
 struct inode*   dirlookup(struct inode*, char*, uint*);
+int             dirlink(struct inode *dp, char *name, uint inum);
+struct inode*   ialloc(uint dev, short type);
+void            iupdate(struct inode *ip);
 
 // ide.c
 void            ideinit(void);

@@ -50,6 +50,7 @@ binit(void)
 
 // Look through buffer cache for block on device dev.
 // If not found, allocate a buffer.
+// In either case, return locked buffer.
 static struct buf*
 bget(uint dev, uint blockno)
 {
@@ -64,9 +65,10 @@ bget(uint dev, uint blockno)
   }
 
   // Not cached; recycle an unused buffer.
-  // refcnt == 0 ensures that the buffer is not in use. No need to check the B_DIRTY flag
+  // Even if refcnt==0, B_DIRTY indicates a buffer is in use
+  // because log.c has modified it but not yet committed it.
   for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
-    if(b->refcnt == 0) {
+    if(b->refcnt == 0 && (b->flags & B_DIRTY) == 0) {
       b->dev = dev;
       b->blockno = blockno;
       b->flags = 0;
@@ -77,7 +79,7 @@ bget(uint dev, uint blockno)
   panic("bget: no buffers");
 }
 
-// Return a buf with the contents of the indicated block.
+// Return a locked buf with the contents of the indicated block.
 struct buf*
 bread(uint dev, uint blockno)
 {
@@ -90,7 +92,7 @@ bread(uint dev, uint blockno)
   return b;
 }
 
-// Write b's contents to disk.
+// Write b's contents to disk.  Must be locked.
 void
 bwrite(struct buf *b)
 {

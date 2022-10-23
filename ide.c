@@ -23,6 +23,7 @@
 
 // idequeue points to the buf now being read/written to the disk.
 // idequeue->qnext points to the next buf to be processed.
+// You must hold idelock while manipulating queue.
 
 static struct buf *idequeue;
 
@@ -46,7 +47,7 @@ ideinit(void)
 {
   int i;
 
-
+  // initlock(&idelock, "ide");
   ioapicenable(IRQ_IDE, ncpu - 1);
   idewait(0);
 
@@ -63,6 +64,7 @@ ideinit(void)
   outb(0x1f6, 0xe0 | (0<<4));
 }
 
+// Start the request for b.  Caller must hold idelock.
 static void
 idestart(struct buf *b)
 {
@@ -105,22 +107,11 @@ ideintr(void)
   idequeue = b->qnext;
 
   // Read data if needed.
-  if(!(b->flags & B_DIRTY)) {
-    // it was a read, and we need to collect the data
-    if(idewait(1) >= 0) {
-      insl(0x1f0, b->data, BSIZE/4);
-      b->flags |= B_VALID;
-      // to be safe, not needed otherwise
-      b->flags &= ~B_DIRTY;
-    } else {
-      // PROBLEM SOLVED HERE!
-      panic("disk did not read properly. halting..bye.."); 
-    }
-  } else {
-    // this is entered if it is just a response interrupt to the write sent earlier
-    b->flags |= B_VALID;
-    b->flags &= ~B_DIRTY;
-  }
+  if(!(b->flags & B_DIRTY) && idewait(1) >= 0)
+    insl(0x1f0, b->data, BSIZE/4);
+
+  b->flags |= B_VALID;
+  b->flags &= ~B_DIRTY;
 
   // Start disk on next buf in queue.
   if(idequeue != 0)
@@ -154,7 +145,7 @@ iderw(struct buf *b)
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID)
   {
     // Warning: If we do not call noop(), compiler generates code that does not
-    // read "b->flags" again and therefore the execution never leaves this while loop. 
+    // read "b->flags" again and therefore never come out of this while loop. 
     // "b->flags" is modified by the trap handler in ideintr().  
     noop();
   }

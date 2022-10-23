@@ -1,5 +1,7 @@
 struct buf;
 struct rtcdate;
+struct stat;
+struct superblock;
 
 // bio.c
 void            binit(void);

@@ -4,6 +4,7 @@ struct rtcdate;
 void            cprintf(char*, ...);
 void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
+void            consoleintr(int(*)(void));
 
 // ioapic.c
 void            ioapicenable(int irq, int cpu);
@@ -50,6 +51,7 @@ void            tvinit(void);
 
 // uart.c
 void            uartinit(void);
+void            uartintr(void);
 void            uartputc(int);
 
 // number of elements in fixed-size array

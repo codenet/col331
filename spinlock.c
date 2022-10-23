@@ -1,6 +1,7 @@
 // Mutual exclusion spin locks.
 
 #include "types.h"
+// #include "memlayout.h"
 
 // Record the current call stack in pcs[] by following the %ebp chain.
 void

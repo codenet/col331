@@ -57,6 +57,20 @@ stosl(void *addr, int data, int cnt)
                "memory", "cc");
 }
 
+struct gatedesc;
+
+static inline void
+lidt(struct gatedesc *p, int size)
+{
+  volatile ushort pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint)p;
+  pd[2] = (uint)p >> 16;
+
+  asm volatile("lidt (%0)" : : "r" (pd));
+}
+
 static inline uint
 readeflags(void)
 {
@@ -76,20 +90,6 @@ static inline void
 sti(void)
 {
   asm volatile("sti");
-}
-
-struct gatedesc;
-
-static inline void
-lidt(struct gatedesc *p, int size)
-{
-  volatile ushort pd[3];
-
-  pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
-
-  asm volatile("lidt (%0)" : : "r" (pd));
 }
 
 static inline void

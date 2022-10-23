@@ -4,6 +4,7 @@
 #include "defs.h"
 #include "param.h"
 #include "x86.h"
+#include "traps.h"
 
 #define COM1    0x3f8
 
@@ -30,6 +31,12 @@ uartinit(void)
     return;
   uart = 1;
 
+  // Acknowledge pre-existing interrupt conditions;
+  // enable interrupts.
+  inb(COM1+2);
+  inb(COM1+0);
+  ioapicenable(IRQ_COM1, 0);
+
   // Announce that we're here.
   for(p="xv6...\n"; *p; p++)
     uartputc(*p);
@@ -44,4 +51,21 @@ uartputc(int c)
     return;
   for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++);
   outb(COM1+0, c);
+}
+
+
+static int
+uartgetc(void)
+{
+  if(!uart)
+    return -1;
+  if(!(inb(COM1+5) & 0x01))
+    return -1;
+  return inb(COM1+0);
+}
+
+void
+uartintr(void)
+{
+  consoleintr(uartgetc);
 }

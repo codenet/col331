@@ -1,10 +1,12 @@
-// Console output.
-// Output is written to the screen and serial port.
+// Console input and output.
+// Input is from the serial port.
+// Output is written to the serial port.
 
 #include "types.h"
 #include "defs.h"
 #include "param.h"
 #include "x86.h"
+#include "traps.h"
 
 static void consputc(int);
 static int panicked = 0;
@@ -34,7 +36,7 @@ printint(int xx, int base, int sign)
     consputc(buf[i]);
 }
 
-// Print to the console. Only understands %d, %x, %p, %s.
+// Print to the console. only understands %d, %x, %p, %s.
 void
 cprintf(char *fmt, ...)
 {
@@ -98,8 +100,6 @@ panic(char *s)
   uint pcs[10];
 
   cli();
-  // cons.locking = 0;
-  // use lapiccpunum so that we can call panic from mycpu()
   cprintf("lapicid %d: panic: ", lapicid());
   cprintf(s);
   cprintf("\n");
@@ -119,4 +119,48 @@ consputc(int c)
     uartputc('\b'); uartputc(' '); uartputc('\b');
   } else
     uartputc(c);
+}
+
+#define INPUT_BUF 128
+struct {
+  char buf[INPUT_BUF];
+  uint r;  // Read index
+  uint w;  // Write index
+  uint e;  // Edit index
+} input;
+
+#define C(x)  ((x)-'@')  // Control-x
+
+void
+consoleintr(int (*getc)(void))
+{
+  int c;
+
+  while((c = getc()) >= 0){
+    switch(c){
+    case C('U'):  // Kill line.
+      while(input.e != input.w &&
+            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+        input.e--;
+        consputc(BACKSPACE);
+      }
+      break;
+    case C('H'): case '\x7f':  // Backspace
+      if(input.e != input.w){
+        input.e--;
+        consputc(BACKSPACE);
+      }
+      break;
+    default:
+      if(c != 0 && input.e-input.r < INPUT_BUF){
+        c = (c == '\r') ? '\n' : c;
+        input.buf[input.e++ % INPUT_BUF] = c;
+        consputc(c);
+        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+          input.w = input.e;
+        }
+      }
+      break;
+    }
+  }
 }

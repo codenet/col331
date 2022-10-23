@@ -108,5 +108,8 @@ void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
 
+// vm.c
+void            seginit(void);
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

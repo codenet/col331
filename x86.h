@@ -57,6 +57,20 @@ stosl(void *addr, int data, int cnt)
                "memory", "cc");
 }
 
+struct segdesc;
+
+static inline void
+lgdt(struct segdesc *p, int size)
+{
+  volatile ushort pd[3];
+
+  pd[0] = size-1;
+  pd[1] = (uint)p;
+  pd[2] = (uint)p >> 16;
+
+  asm volatile("lgdt (%0)" : : "r" (pd));
+}
+
 struct gatedesc;
 
 static inline void

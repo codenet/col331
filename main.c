@@ -7,6 +7,9 @@
 #include "stat.h"
 #include "file.h"
 #include "fcntl.h"
+#include "mmu.h"
+#include "proc.h"
+#include "memlayout.h"
 
 extern char end[]; // first address after kernel loaded from ELF file
 
@@ -34,7 +37,7 @@ main(void)
   lapicinit();     // interrupt controller
   picinit();       // disable pic
   ioapicinit();    // another interrupt controller
-  consoleinit();   // register console device handlers
+  consoleinit();   // console hardware
   uartinit();      // serial port
   ideinit();       // disk 
   tvinit();        // trap vectors
@@ -46,7 +49,8 @@ main(void)
 
   struct inode console;
   mknod(&console, "console", CONSOLE, CONSOLE);
-  welcome();       // print welcome message
+  seginit();       // segment descriptors
+  welcome();
   for(;;)
     wfi();
 }

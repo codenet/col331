@@ -10,17 +10,7 @@ extern char end[]; // first address after kernel loaded from ELF file
 
 static inline void
 welcome(void) {
-  struct inode* root = iget(ROOTDEV, ROOTINO);
-  iread(root);
-
-	struct dirent entries[3];
-  int n = readi(root, (char *) entries, 0, sizeof(entries));
-  cprintf("Read %d bytes from inode of root directory\n", n);
-  for(int i = 0; i < 3; i ++) {
-    cprintf("name: %s is at inum: %d\n", entries[i].name, entries[i].inum);
-  }
-
-  struct inode* wtxt = iget(ROOTDEV, entries[2].inum);
+  struct inode* wtxt = namei("/welcome.txt");
   iread(wtxt);
   struct stat st;
   stati(wtxt, &st);
@@ -28,7 +18,7 @@ welcome(void) {
   st.dev, st.ino, st.type, st.nlink, st.size);
 
   char greet[512];
-  n = readi(wtxt, greet, 0, st.size);
+  int n = readi(wtxt, greet, 0, st.size);
   cprintf("Read %d bytes from welcome.txt\n", n);
   cprintf("%s\n", greet);
 }

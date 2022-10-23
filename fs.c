@@ -43,7 +43,7 @@ readsb(int dev, struct superblock *sb)
 // list of blocks holding the file's content.
 //
 // The inodes are laid out sequentially on disk at
-// sb.inodestart. Each inode has a number, indicating its
+// sb.startinode. Each inode has a number, indicating its
 // position on the disk.
 //
 // The kernel keeps a cache of in-use inodes in memory.
@@ -63,6 +63,12 @@ iinit(int dev)
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,
           sb.ninodes, sb.nlog, sb.logstart, sb.inodestart,
           sb.bmapstart);
+}
+
+static void
+irelse(struct inode *ip)
+{
+  ip->ref--;
 }
 
 // Find the inode with number inum on device dev
@@ -131,6 +137,7 @@ iread(struct inode *ip)
 // listed in block ip->addrs[NDIRECT].
 
 // Return the disk block address of the nth block in inode ip.
+// If there is no such block, bmap allocates one.
 static uint
 bmap(struct inode *ip, uint bn)
 {
@@ -145,9 +152,7 @@ bmap(struct inode *ip, uint bn)
     // Load indirect block
     bp = bread(ip->dev, ip->addrs[NDIRECT]);
     uint *a = (uint*)bp->data;
-    uint addr = a[bn];
-    brelse(bp);
-    return addr;
+    return a[bn];
   }
 
   panic("bmap: out of range");
@@ -185,4 +190,128 @@ readi(struct inode *ip, char *dst, uint off, uint n)
     brelse(bp);
   }
   return n;
+}
+
+// Directories
+
+int
+namecmp(const char *s, const char *t)
+{
+  return strncmp(s, t, DIRSIZ);
+}
+
+// Look for a directory entry in a directory.
+// If found, set *poff to byte offset of entry.
+struct inode*
+dirlookup(struct inode *dp, char *name, uint *poff)
+{
+  uint off, inum;
+  struct dirent de;
+
+  if(dp->type != T_DIR)
+    panic("dirlookup not DIR");
+
+  for(off = 0; off < dp->size; off += sizeof(de)){
+    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+      panic("dirlookup read");
+    if(de.inum == 0)
+      continue;
+    if(namecmp(name, de.name) == 0){
+      // entry matches path element
+      if(poff)
+        *poff = off;
+      inum = de.inum;
+      return iget(dp->dev, inum);
+    }
+  }
+
+  return 0;
+}
+
+// Paths
+
+// Copy the next path element from path into name.
+// Return a pointer to the element following the copied one.
+// The returned path has no leading slashes,
+// so the caller can check *path=='\0' to see if the name is the last one.
+// If no name to remove, return 0.
+//
+// Examples:
+//   skipelem("a/bb/c", name) = "bb/c", setting name = "a"
+//   skipelem("///a//bb", name) = "bb", setting name = "a"
+//   skipelem("a", name) = "", setting name = "a"
+//   skipelem("", name) = skipelem("////", name) = 0
+//
+static char*
+skipelem(char *path, char *name)
+{
+  char *s;
+  int len;
+
+  while(*path == '/')
+    path++;
+  if(*path == 0)
+    return 0;
+  s = path;
+  while(*path != '/' && *path != 0)
+    path++;
+  len = path - s;
+  if(len >= DIRSIZ)
+    memmove(name, s, DIRSIZ);
+  else {
+    memmove(name, s, len);
+    name[len] = 0;
+  }
+  while(*path == '/')
+    path++;
+  return path;
+}
+
+// Look up and return the inode for a path name.
+// If parent != 0, return the inode for the parent and copy the final
+// path element into name, which must have room for DIRSIZ bytes.
+// Must be called inside a transaction since it calls iput().
+static struct inode*
+namex(char *path, int nameiparent, char *name)
+{
+  struct inode *ip, *next;
+
+  ip = iget(ROOTDEV, ROOTINO);
+
+  while((path = skipelem(path, name)) != 0){
+    iread(ip);
+    if(ip->type != T_DIR){
+      irelse(ip);
+      return 0;
+    }
+    if(nameiparent && *path == '\0'){
+      // Stop one level early.
+      irelse(ip);
+      return ip;
+    }
+    if((next = dirlookup(ip, name, 0)) == 0){
+      irelse(ip);
+      return 0;
+    }
+    irelse(ip);
+    ip = next;
+  }
+  if(nameiparent){
+    irelse(ip);
+    return 0;
+  }
+  return ip;
+}
+
+struct inode*
+namei(char *path)
+{
+  char name[DIRSIZ];
+  return namex(path, 0, name);
+}
+
+struct inode*
+nameiparent(char *path, char *name)
+{
+  return namex(path, 1, name);
 }

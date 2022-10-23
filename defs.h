@@ -24,6 +24,10 @@ void            iread(struct inode*);
 struct inode*   iget(uint dev, uint inum);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
+int             namecmp(const char*, const char*);
+struct inode*   namei(char*);
+struct inode*   nameiparent(char*, char*);
+struct inode*   dirlookup(struct inode*, char*, uint*);
 
 // ide.c
 void            ideinit(void);

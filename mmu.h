@@ -7,3 +7,6 @@
 // various segment selectors.
 #define SEG_KCODE 1  // kernel code
 #define SEG_KDATA 2  // kernel data+stack
+#define SEG_UCODE 3  // user code
+#define SEG_UDATA 4  // user data+stack
+#define SEG_TSS   5  // this process's task state

@@ -5,6 +5,7 @@ struct cpu {
   struct context *scheduler;   // swtch() here to enter scheduler
   struct taskstate ts;         // Used by x86 to find stack for interrupt
   struct segdesc gdt[NSEGS];   // x86 global descriptor table
+  int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
   struct proc *proc;           // The process running on this cpu or null
 };
@@ -34,6 +35,7 @@ enum procstate { UNUSED, EMBRYO, RUNNABLE, RUNNING };
 
 // Per-process state
 struct proc {
+  uint sz;                     // Size of process memory (bytes)
   char *offset;                // Where code is copied
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
@@ -41,6 +43,7 @@ struct proc {
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
+  struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };

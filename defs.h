@@ -99,6 +99,8 @@ void            yield(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
+void            pushcli(void);
+void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);
@@ -111,6 +113,14 @@ char*           strncpy(char*, const char*, int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
+
+// syscall.c
+int             argint(int, int*);
+int             argptr(int, char**, int);
+int             argstr(int, char**);
+int             fetchint(uint, int*);
+int             fetchstr(uint, char**);
+void            syscall(void);
 
 // trap.c
 void            idtinit(void);

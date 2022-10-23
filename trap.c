@@ -18,6 +18,7 @@ tvinit(void)
 
   for(i = 0; i < 256; i++)
     SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
+  SETGATE(idt[T_SYSCALL], 1, SEG_KCODE<<3, vectors[T_SYSCALL], DPL_USER);
 }
 
 void
@@ -29,6 +30,12 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  if(tf->trapno == T_SYSCALL){
+    myproc()->tf = tf;
+    syscall();
+    return;
+  }
+
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     ticks++;

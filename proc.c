@@ -59,6 +59,7 @@ found:
     p->state = UNUSED;
     return 0;
   }
+  p->sz = PGSIZE - KSTACKSIZE;
 
   sp = (char*)(p->offset + PGSIZE);
 
@@ -98,7 +99,7 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE;
+  p->tf->esp = PGSIZE - KSTACKSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -121,26 +122,31 @@ scheduler(void)
   c->proc = 0;
   
   for(;;){
+    // Enable interrupts on this processor.
     sti();
+
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
       // Switch to chosen process. 
-      cli();
       c->proc = p;
       p->state = RUNNING;
 
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
-      c->proc=0;
-      sti();
     }
   }
 }
 
-
+// Enter scheduler.  Must hold only ptable.lock
+// and have changed proc->state. Saves and restores
+// intena because intena is a property of this
+// kernel thread, not this CPU. It should
+// be proc->intena and proc->ncli, but that would
+// break in the few places where a lock is held but
+// there's no process.
 void
 sched(void)
 {

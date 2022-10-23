@@ -20,6 +20,8 @@ OBJS = \
 	swtch.o\
 	vm.o\
 	kalloc.o\
+	syscall.o\
+	sysfile.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -132,7 +134,7 @@ clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*.o *.d *.asm *.sym bootblock \
 	kernel xv6.img vectors.S \
-	.gdbinit mkfs fs.img
+	.gdbinit mkfs fs.img initcode
 
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25002)

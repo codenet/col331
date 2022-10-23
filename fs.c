@@ -20,6 +20,7 @@
 #include "file.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
+static void itrunc(struct inode*);
 // there should be one superblock per disk device, but we run with
 // only one device
 struct superblock sb; 
@@ -72,6 +73,24 @@ balloc(uint dev)
     brelse(bp);
   }
   panic("balloc: out of blocks");
+}
+
+
+// Free a disk block.
+static void
+bfree(int dev, uint b)
+{
+  struct buf *bp;
+  int bi, m;
+
+  bp = bread(dev, BBLOCK(b, sb));
+  bi = b % BPB;
+  m = 1 << (bi % 8);
+  if((bp->data[bi/8] & m) == 0)
+    panic("freeing free block");
+  bp->data[bi/8] &= ~m;
+  bwrite(bp);
+  brelse(bp);
 }
 
 // Inodes.
@@ -129,9 +148,24 @@ ialloc(uint dev, short type)
   panic("ialloc: no inodes");
 }
 
-static void
-irelse(struct inode *ip)
+// Drop a reference to an in-memory inode.
+// If that was the last reference, the inode cache entry can
+// be recycled.
+// If that was the last reference and the inode has no links
+// to it, free the inode (and its content) on disk.
+void
+iput(struct inode *ip)
 {
+  if(ip->valid && ip->nlink == 0){
+    int r = ip->ref;
+    if(r == 1){
+      // inode has no links and no other references: truncate and free.
+      itrunc(ip);
+      ip->type = 0;
+      iupdate(ip);
+      ip->valid = 0;
+    }
+  }
   ip->ref--;
 }
 
@@ -253,6 +287,41 @@ bmap(struct inode *ip, uint bn)
   panic("bmap: out of range");
 }
 
+// Truncate inode (discard contents).
+// Only called when the inode has no links
+// to it (no directory entries referring to it)
+// and has no in-memory reference to it (is
+// not an open file or current directory).
+static void
+itrunc(struct inode *ip)
+{
+  int i, j;
+  struct buf *bp;
+  uint *a;
+
+  for(i = 0; i < NDIRECT; i++){
+    if(ip->addrs[i]){
+      bfree(ip->dev, ip->addrs[i]);
+      ip->addrs[i] = 0;
+    }
+  }
+
+  if(ip->addrs[NDIRECT]){
+    bp = bread(ip->dev, ip->addrs[NDIRECT]);
+    a = (uint*)bp->data;
+    for(j = 0; j < NINDIRECT; j++){
+      if(a[j])
+        bfree(ip->dev, a[j]);
+    }
+    brelse(bp);
+    bfree(ip->dev, ip->addrs[NDIRECT]);
+    ip->addrs[NDIRECT] = 0;
+  }
+
+  ip->size = 0;
+  iupdate(ip);
+}
+
 // Copy stat information from inode.
 // Caller must hold ip->lock.
 void
@@ -273,7 +342,7 @@ readi(struct inode *ip, char *dst, uint off, uint n)
   uint tot, m;
   struct buf *bp;
 
-  if(off > ip->size || off + n < off)
+  if(off > ip->size || off + n < off || ip->nlink < 1)
     return -1;
   if(off + n > ip->size)
     n = ip->size - off;
@@ -362,7 +431,7 @@ dirlink(struct inode *dp, char *name, uint inum)
 
   // Check that name is not present.
   if((ip = dirlookup(dp, name, 0)) != 0){
-    irelse(ip);
+    iput(ip);
     return -1;
   }
 
@@ -435,23 +504,22 @@ namex(char *path, int nameiparent, char *name)
   while((path = skipelem(path, name)) != 0){
     iread(ip);
     if(ip->type != T_DIR){
-      irelse(ip);
+      iput(ip);
       return 0;
     }
     if(nameiparent && *path == '\0'){
       // Stop one level early.
-      
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){
-      irelse(ip);
+      iput(ip);
       return 0;
     }
-    irelse(ip);
+    iput(ip);
     ip = next;
   }
   if(nameiparent){
-    irelse(ip);
+    iput(ip);
     return 0;
   }
   return ip;

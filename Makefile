@@ -15,6 +15,7 @@ OBJS = \
 	bio.o\
 	ide.o\
 	fs.o\
+	file.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -102,6 +103,7 @@ kernel: $(OBJS) entry.o kernel.ld
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary
 	$(OBJDUMP) -S kernel > kernel.asm
 	$(OBJDUMP) -t kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernel.sym
+	# $(OBJDUMP) -s kernel > kernel.dump
 
 
 vectors.S: vectors.pl
@@ -122,7 +124,7 @@ clean:
 	.gdbinit mkfs fs.img
 
 # try to generate a unique GDB port
-GDBPORT = $(shell expr `id -u` % 5000 + 25001)
+GDBPORT = $(shell expr `id -u` % 5000 + 25002)
 # QEMU's gdb stub command line changed in 0.11
 QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \

@@ -17,6 +17,20 @@ void            panic(char*) __attribute__((noreturn));
 void            consoleintr(int(*)(void));
 void            consputc(int);
 
+// file.c
+struct file*    filealloc(void);
+void            fileclose(struct file*);
+struct file*    filedup(struct file*);
+void            fileinit(void);
+int             fileread(struct file*, char*, int n);
+int             filestat(struct file*, struct stat*);
+int             filewrite(struct file*, char*, int n);
+int             mkdir(char *path, struct inode *ip);
+struct inode*   create(char *path, short type, short major, short minor);
+struct file*    open(char* path, int omode);
+int             unlink(char* path, char* name);
+int             isdirempty(struct inode *dp);
+
 // fs.c
 void            readsb(int dev, struct superblock *sb);
 void            iinit(int dev);
@@ -31,6 +45,8 @@ struct inode*   dirlookup(struct inode*, char*, uint*);
 int             dirlink(struct inode *dp, char *name, uint inum);
 struct inode*   ialloc(uint dev, short type);
 void            iupdate(struct inode *ip);
+void            iput(struct inode*);
+int             writei(struct inode*, char*, uint, uint);
 
 // ide.c
 void            ideinit(void);

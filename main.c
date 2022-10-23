@@ -6,46 +6,55 @@
 #include "param.h"
 #include "stat.h"
 #include "file.h"
+#include "fcntl.h"
 
 extern char end[]; // first address after kernel loaded from ELF file
 
 static inline void
 welcome(void) {
-  struct inode* root  = namei("/");
-  iread(root);
-  struct inode* foodir;
+  // Create and write /foo/hello.txt
 
-  if((foodir = dirlookup(root, "foo", 0)) == 0) {
-    cprintf("/foo not found. Creating!\n");
-    foodir = ialloc(ROOTDEV, T_DIR);
-    iread(foodir);
-    dirlink(foodir, ".", foodir->inum);
-    dirlink(foodir, "..", root->inum);
-    dirlink(root, "foo", foodir->inum);
+  create("/foo", T_DIR, 0, 0);
+  struct file* gtxt;
+  if((gtxt = open("/foo/hello.txt", O_CREATE | O_WRONLY)) == 0){
+    panic("Failed to create /foo/hello.txt");
+  }
+  int n = filewrite(gtxt, "hello\0", 6);
+  cprintf("Wrote %d characters to /foo/hello.txt\n", n);
+  fileclose(gtxt);
+
+  if((gtxt=open("/foo/hello.txt", O_RDONLY)) == 0) {
+    panic("Unable to open /foo/hello.txt");
+  }
+  char welcome[512];
+  n = fileread(gtxt, welcome, 6);
+  cprintf("Read %d chars from /foo/hello.txt: %s\n", n, welcome);
+  fileclose(gtxt);
+
+	// Delete /foo/hello.txt
+  char name[DIRSIZ];
+ 
+  unlink("/foo/hello.txt", name);
+  struct inode* foo = namei("/foo");
+  if(!isdirempty(foo)) {
+    panic("/foo should be empty");
+  }
+
+  if((gtxt = open("/foo/hello.txt", O_RDONLY)) != 0) {
+    panic("Could open /foo/hello.txt after unlinking");
   }
   
-  // Read welcome.txt
-  struct inode* wtxt;
-  if((wtxt=namei("/foo/greet.txt")) == 0) {
-    cprintf("/foo/greet.txt not found. Creating!\n");
-    struct inode* wtxt_orig = namei("/welcome.txt");
-    dirlink(foodir, "greet.txt", wtxt_orig->inum);
-    wtxt=namei("/foo/greet.txt");
+  // Print welcome message
+  struct file* wtxt;
+  if((wtxt=open("/welcome.txt", O_RDONLY)) == 0) {
+    panic("Unable to open /welcome.txt");
   }
-
-  iread(wtxt);
-  struct stat st;
-  stati(wtxt, &st);
-
-  char greet[512];
-  int n = readi(wtxt, greet, 0, st.size);
-  cprintf("Read %d bytes from /foo/greet.txt\n", n);
-  cprintf("%s\n", greet);
+  n = fileread(wtxt, welcome, 512);
+  cprintf("Read %d chars from /welcome.txt:\n %s", n, welcome);
+  fileclose(wtxt);
 }
 
 // Bootstrap processor starts running C code here.
-// Allocate a real stack and switch to it, first
-// doing some setup required for memory allocator to work.
 int
 main(void)
 {

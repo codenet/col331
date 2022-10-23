@@ -1,3 +1,12 @@
+struct file {
+  enum { FD_NONE, FD_INODE } type;
+  int ref; // reference count
+  char readable;
+  char writable;
+  struct inode *ip;
+  uint off;
+};
+
 // in-memory copy of an inode
 struct inode {
   uint dev;           // Device number

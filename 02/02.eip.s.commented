@@ -1,0 +1,41 @@
+	.file	"02.eip.c"
+	.text
+	.globl	exponent
+	.type	exponent, @function
+exponent:
+	endbr32
+	movl	4(%esp), %ecx	# ecx = x
+	movl	8(%esp), %eax	# eax = y
+	testl	%eax, %eax	# bitwise and eax with eax. 
+				# SF=1 if eax<0. ZF=1 if eax=0.
+	jle	.L4		# Jump if SF=1 or ZF=1 (y <= 0)
+	movl	%ecx, %edx	# edx = ecx (z = x)
+.L3:
+	imull	%ecx, %edx	# z = z*x
+	subl	$1, %eax	# eax-- (y--). ZF=1 if eax=0 (y=0)
+	jne	.L3		# Jump back to loop if ZF=0
+.L1:
+	movl	%edx, %eax	# eax = edx
+	ret
+.L4:
+	movl	%ecx, %edx
+	jmp	.L1
+	.size	exponent, .-exponent
+	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 4
+	.long	 1f - 0f
+	.long	 4f - 1f
+	.long	 5
+0:
+	.string	 "GNU"
+1:
+	.align 4
+	.long	 0xc0000002
+	.long	 3f - 2f
+2:
+	.long	 0x3
+3:
+	.align 4
+4:

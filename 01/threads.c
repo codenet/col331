@@ -4,11 +4,6 @@
 #include "common_threads.h"
 
 volatile int counter = 0; 
-// volatile used to indicate to the compiler that a variable's value may change unexpectedly
-// volatile is needed to make sure that compiler doesn't do any optimisations such as storing the value of counter
-// in any registers to prevent race conditions
-// But still, we are trying to access the value of the counter in the critical section without a lock 
-// so a race condition can still occur due to our own fault of writing the incorrect programme.
 int loops;
 
 void *worker(void *arg) {

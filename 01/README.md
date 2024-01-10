@@ -33,14 +33,6 @@ prompt> ./io
 One issue with mem.c is that address space randomization is usually on by
 default. To turn it off:
 
-## FAQ
-```volatile int counter = 0```
-* Volatile used to indicate to the compiler that a variable's value may change unexpectedly
-* i.e, the compiler can't assume that the value of the variable won't change if it is not written to.
-* Volatile is needed to make sure that compiler doesn't do any optimisations such as storing the value of counter in any temporary variables.
-* But still, we are trying to access the value of the counter in the critical section without a lock 
-* so a race condition can still occur due to our own fault of writing the incorrect programme.
-
 ### macOS
 From [stackoverflow](http://stackoverflow.com/questions/23897963/documented-way-to-disable-aslr-on-os-x)
 
@@ -60,5 +52,12 @@ Under Linux you can disable ASLR, without using a debugger, in (at least)  two w
   whole system, which is something you probably don't want. I use this
   one only inside VMs.
 
+## FAQ
+```volatile int counter = 0```
+* Volatile used to indicate to the compiler that a variable's value may change unexpectedly
+* i.e, the compiler can't assume that the value of the variable won't change if it is not written to.
+* Volatile is needed to make sure that compiler doesn't do any optimisations such as storing the value of counter in any temporary variables.
+* But still, we are trying to access the value of the counter in the critical section without a lock 
+* so a race condition can still occur due to our own fault of writing the incorrect programme.
 
 

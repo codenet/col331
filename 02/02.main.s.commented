@@ -1,0 +1,36 @@
+	.file	"02.main.c"
+	.text
+	.globl	bar
+	.type	bar, @function
+bar:
+	subl	$20, %esp	# esp = esp - 20
+	pushl	$3		# push 3, esp -= 4
+	pushl	$41		# push 41, esp -= 4
+	call	exponent	# push eip, esp-=4, jump to exponent
+	addl	$28, %esp	# restore esp
+	ret			# return to stored pointer
+	.size	bar, .-bar
+	.globl	main
+	.type	main, @function
+main:
+	leal	4(%esp), %ecx	# ecx = esp + 4
+	andl	$-16, %esp	# (esp & 0xF0). 16-bit align
+	pushl	-4(%ecx)	# push *(ecx-4)
+	pushl	%ebp		# push ebp. esp-=4
+	movl	%esp, %ebp	# ebp = esp
+	pushl	%ecx		# push ecx. esp-=4
+	subl	$4, %esp	# esp -= 4
+	call	bar		# push eip, esp-=4, jump to bar
+	subl	$8, %esp	# esp -= 8
+	pushl	$23		# push 23, esp-=4
+	pushl	$11		# push 11, esp-=4
+	call	foo		# push eip, esp-=4, jump to foo
+	addl	$16, %esp	# esp+=16
+	movl	$0, %eax	# eax = 0 (return value)
+	movl	-4(%ebp), %ecx	# ecx = *(ebp-4)
+	leave
+	leal	-4(%ecx), %esp	# esp = *(ecx-4)
+	ret
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0"
+	.section	.note.GNU-stack,"",@progbits

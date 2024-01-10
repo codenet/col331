@@ -1,3 +1,5 @@
+#include "common.h"
+
 int exponent(int x, int y) {
 	int z = x;
 	while(y > 0) {

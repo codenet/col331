@@ -1,0 +1,277 @@
+	.file	"threads-notv.c"
+	.text
+	.p2align 4
+	.globl	worker
+	.type	worker, @function
+worker:
+	movl	loops, %eax		# eax = loops
+	testl	%eax, %eax		# set SF if eax < 0, ZF if eax = 0
+	jle	.L2			#
+	addl	%eax, counter		# counter += eax
+.L2:
+	xorl	%eax, %eax		# eax = 0
+	ret
+	.size	worker, .-worker
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"common.h"
+.LC1:
+	.string	"rc == 0"
+	.text
+	.p2align 4
+	.type	GetTime.part.0, @function
+GetTime.part.0:
+	pushl	%esi
+	popl	%esi
+	subl	$12, %esp
+	pushl	$__PRETTY_FUNCTION__.2934
+	pushl	$12
+	pushl	$.LC0
+	pushl	$.LC1
+	call	__assert_fail
+	.size	GetTime.part.0, .-GetTime.part.0
+	.p2align 4
+	.globl	GetTime
+	.type	GetTime, @function
+GetTime:
+	subl	$36, %esp
+	movl	%gs:20, %eax
+	movl	%eax, 20(%esp)
+	xorl	%eax, %eax
+	pushl	$0
+	leal	16(%esp), %eax
+	pushl	%eax
+	call	gettimeofday
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L10
+	movl	12(%esp), %eax
+	xorl	%gs:20, %eax
+	fildl	8(%esp)
+	fdivs	.LC2
+	fildl	4(%esp)
+	faddp	%st, %st(1)
+	jne	.L11
+	addl	$28, %esp
+	ret
+.L10:
+	call	GetTime.part.0
+.L11:
+	fstp	%st(0)
+	call	__stack_chk_fail
+	.size	GetTime, .-GetTime
+	.p2align 4
+	.globl	Spin
+	.type	Spin, @function
+Spin:
+	pushl	%ebx
+	subl	$48, %esp
+	movl	%gs:20, %eax
+	movl	%eax, 36(%esp)
+	xorl	%eax, %eax
+	pushl	$0
+	leal	32(%esp), %ebx
+	pushl	%ebx
+	call	gettimeofday
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L19
+	fildl	24(%esp)
+	fdivs	.LC2
+	fildl	20(%esp)
+	faddp	%st, %st(1)
+	fstpl	8(%esp)
+	.p2align 4,,10
+	.p2align 3
+.L15:
+	subl	$8, %esp
+	pushl	$0
+	pushl	%ebx
+	call	gettimeofday
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L20
+	fildl	24(%esp)
+	fdivs	.LC2
+	fildl	20(%esp)
+	faddp	%st, %st(1)
+	fsubl	8(%esp)
+	fildl	48(%esp)
+	fcomip	%st(1), %st
+	fstp	%st(0)
+	ja	.L15
+	movl	28(%esp), %eax
+	xorl	%gs:20, %eax
+	jne	.L21
+	addl	$40, %esp
+	popl	%ebx
+	ret
+.L20:
+	pushl	$__PRETTY_FUNCTION__.2934
+	pushl	$12
+	pushl	$.LC0
+	pushl	$.LC1
+	call	__assert_fail
+.L19:
+	call	GetTime.part.0
+.L21:
+	call	__stack_chk_fail
+	.size	Spin, .-Spin
+	.section	.rodata.str1.1
+.LC4:
+	.string	"usage: threads <loops>\n"
+.LC5:
+	.string	"Initial value : %d\n"
+.LC6:
+	.string	"threads-notv.c"
+	.section	.rodata.str1.4,"aMS",@progbits,1
+	.align 4
+.LC7:
+	.string	"pthread_create(&p1, ((void *)0), worker, ((void *)0)) == 0"
+	.align 4
+.LC8:
+	.string	"pthread_create(&p2, ((void *)0), worker, ((void *)0)) == 0"
+	.align 4
+.LC9:
+	.string	"pthread_join(p1, ((void *)0)) == 0"
+	.align 4
+.LC10:
+	.string	"pthread_join(p2, ((void *)0)) == 0"
+	.section	.rodata.str1.1
+.LC11:
+	.string	"Final value   : %d\n"
+	.section	.text.startup,"ax",@progbits
+	.p2align 4
+	.globl	main
+	.type	main, @function
+main:
+	leal	4(%esp), %ecx
+	andl	$-16, %esp
+	pushl	-4(%ecx)
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%ecx
+	subl	$20, %esp
+	movl	4(%ecx), %eax
+	movl	%gs:20, %edx
+	movl	%edx, -12(%ebp)
+	xorl	%edx, %edx
+	cmpl	$2, (%ecx)
+	jne	.L30
+	subl	$4, %esp
+	pushl	$10
+	pushl	$0
+	pushl	4(%eax)
+	call	strtol
+	addl	$12, %esp
+	pushl	counter
+	pushl	$.LC5
+	pushl	$1
+	movl	%eax, loops
+	call	__printf_chk
+	leal	-20(%ebp), %eax
+	pushl	$0
+	pushl	$worker
+	pushl	$0
+	pushl	%eax
+	call	pthread_create
+	addl	$32, %esp
+	testl	%eax, %eax
+	jne	.L31
+	leal	-16(%ebp), %eax
+	pushl	$0
+	pushl	$worker
+	pushl	$0
+	pushl	%eax
+	call	pthread_create
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L32
+	subl	$8, %esp
+	pushl	$0
+	pushl	-20(%ebp)
+	call	pthread_join
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L33
+	subl	$8, %esp
+	pushl	$0
+	pushl	-16(%ebp)
+	call	pthread_join
+	addl	$16, %esp
+	testl	%eax, %eax
+	jne	.L34
+	subl	$4, %esp
+	pushl	counter
+	pushl	$.LC11
+	pushl	$1
+	call	__printf_chk
+	addl	$16, %esp
+	movl	-12(%ebp), %eax
+	xorl	%gs:20, %eax
+	jne	.L35
+	movl	-4(%ebp), %ecx
+	xorl	%eax, %eax
+	leave
+	leal	-4(%ecx), %esp
+	ret
+.L30:
+	pushl	stderr
+	pushl	$23
+	pushl	$1
+	pushl	$.LC4
+	call	fwrite
+	movl	$1, (%esp)
+	call	exit
+.L35:
+	call	__stack_chk_fail
+.L34:
+	pushl	$__PRETTY_FUNCTION__.3492
+	pushl	$28
+	pushl	$.LC6
+	pushl	$.LC10
+	call	__assert_fail
+.L33:
+	pushl	$__PRETTY_FUNCTION__.3492
+	pushl	$27
+	pushl	$.LC6
+	pushl	$.LC9
+	call	__assert_fail
+.L32:
+	pushl	$__PRETTY_FUNCTION__.3492
+	pushl	$26
+	pushl	$.LC6
+	pushl	$.LC8
+	call	__assert_fail
+.L31:
+	pushl	$__PRETTY_FUNCTION__.3492
+	pushl	$25
+	pushl	$.LC6
+	pushl	$.LC7
+	call	__assert_fail
+	.size	main, .-main
+	.section	.rodata
+	.align 4
+	.type	__PRETTY_FUNCTION__.3492, @object
+	.size	__PRETTY_FUNCTION__.3492, 5
+__PRETTY_FUNCTION__.3492:
+	.string	"main"
+	.align 4
+	.type	__PRETTY_FUNCTION__.2934, @object
+	.size	__PRETTY_FUNCTION__.2934, 8
+__PRETTY_FUNCTION__.2934:
+	.string	"GetTime"
+	.comm	loops,4,4
+	.globl	counter
+	.bss
+	.align 4
+	.type	counter, @object
+	.size	counter, 4
+counter:
+	.zero	4
+	.section	.rodata.cst4,"aM",@progbits,4
+	.align 4
+.LC2:
+	.long	1232348160
+	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0"
+	.section	.note.GNU-stack,"",@progbits

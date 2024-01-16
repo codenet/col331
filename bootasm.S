@@ -8,6 +8,7 @@
 
 .code16                       # Assemble for 16-bit mode
 .globl start
+# start label is made global hence it can be accessed from other files
 start:
   cli                         # BIOS enabled interrupts; disable
 
@@ -62,7 +63,7 @@ start32:
 
   # Set up the stack pointer and call into C.
   movl    $start, %esp
-  call    bootmain
+  call    bootmain               # call C function bootmain defined in bootmain.c
 
   # If bootmain returns (it shouldn't), trigger a Bochs
   # breakpoint if running under Bochs, then loop.
@@ -71,7 +72,7 @@ start32:
   outw    %ax, %dx
   movw    $0x8ae0, %ax            # 0x8ae0 -> port 0x8a00
   outw    %ax, %dx
-spin:
+spin:  # crash mechanism to keep in infinite loop
   jmp     spin
 
 # Bootstrap GDT

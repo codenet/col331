@@ -80,9 +80,6 @@ gdt:
   SEG_NULLASM                             # null seg
   SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)   # code seg
   SEG_ASM(STA_W, 0x0, 0xffffffff)         # data seg
-  SEG_ASM(STA_X|STA_R|STA_U, 0x0, 0xffffffff)   # user code seg
-  SEG_ASM(STA_W|STA_U, 0x0, 0xffffffff)   # user data seg
-  SEG_ASM(STS_T32A, &tss, sizeof(tss)-1)  # task state seg
 
 gdtdesc:
   .word   (gdtdesc - gdt - 1)             # sizeof(gdt) - 1

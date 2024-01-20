@@ -25,6 +25,7 @@ bootmain(void)
 
   // Read 1st page off disk
   readseg((uchar*)elf, 4096, 0);
+  // Read bootloader from disk to memory
 
   // Is this an ELF executable?
   if(elf->magic != ELF_MAGIC)
@@ -34,22 +35,35 @@ bootmain(void)
   ph = (struct proghdr*)((uchar*)elf + elf->phoff);
   eph = ph + elf->phnum;
   for(; ph < eph; ph++){
+    // ph->paddr is the physical address of the segment
+    // The readseg function presumably reads data from 
+    // the ELF file at the specified offset (ph->off) 
+    // and size (ph->filesz) and loads it into memory at 
+    // the specified physical address (pa).
     pa = (uchar*)ph->paddr;
+    // void readseg(uchar* pa, uint count, uint offset);
     readseg(pa, ph->filesz, ph->off);
     if(ph->memsz > ph->filesz)
       stosb(pa + ph->filesz, 0, ph->memsz - ph->filesz);
+      // to set the rest of the segment as 0
   }
 
   // Call the entry point from the ELF header.
   // Does not return!
   entry = (void(*)(void))(elf->entry);
   entry();
+  // The entry point is the starting address in memory where the 
+  // program's execution begins. When the operating system or 
+  // bootloader loads the ELF file, it sets the program counter 
+  // (PC) or instruction pointer (IP) to this entry point, 
+  // initiating the execution of the program.
 }
 
 void
 waitdisk(void)
 {
   // Wait for disk ready.
+  // inb(0x1F7) represents status of disk 
   while((inb(0x1F7) & 0xC0) != 0x40)
     ;
 }
@@ -69,6 +83,7 @@ readsect(void *dst, uint offset)
 
   // Read data.
   waitdisk();
+  // size of sector in words
   insl(0x1F0, dst, SECTSIZE/4);
 }
 

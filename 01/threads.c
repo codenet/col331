@@ -3,7 +3,7 @@
 #include "common.h"
 #include "common_threads.h"
 
-volatile int counter = 0;
+volatile int counter = 0; 
 int loops;
 
 void *worker(void *arg) {

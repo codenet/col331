@@ -47,6 +47,8 @@ seta20.2:
   # Complete the transition to 32-bit protected mode by using a long jmp
   # to reload %cs and %eip.  The segment descriptors are set up with no
   # translation, so that the mapping is still the identity mapping.
+  # Left shift by 3 since top 13 bits used for indexing stored in SEG_KCODE
+  # Long jump, use $(SEG_KCODE<<3) for the CS register and $start32 for the EIP register
   ljmp    $(SEG_KCODE<<3), $start32
 
 .code32  # Tell assembler to generate 32-bit code now.

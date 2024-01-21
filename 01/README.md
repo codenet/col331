@@ -54,3 +54,10 @@ Under Linux you can disable ASLR, without using a debugger, in (at least)  two w
 
 
 
+## FAQ
+```volatile int counter = 0```
+* Volatile used to indicate to the compiler that a variable's value may change unexpectedly.
+* i.e, the compiler can't assume that the value of the variable won't change if it is not written to.
+* Volatile is needed to make sure that compiler doesn't do any optimisations such as storing the value of counter in any temporary variables.
+* But still, we are trying to access the value of the counter in the critical section without a lock.
+* So a race condition can still occur due to our own fault of writing the incorrect programme.

@@ -4,9 +4,9 @@
 
 #include "types.h"
 #include "defs.h"
-#include "param.h"
+// #include "param.h"
 #include "x86.h"
-#include "traps.h"
+// #include "traps.h"
 
 static void consputc(int);
 static int panicked = 0;

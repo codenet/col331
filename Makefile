@@ -17,6 +17,7 @@ MAC_CCFLAGS := $(shell if [[ "$(shell uname -s)" == "Darwin" && "$(shell uname -
 	echo ""; \
 fi)
 
+
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
 TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \

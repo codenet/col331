@@ -41,7 +41,7 @@ map blocks.
 00000440: 0100 0000 0000 0100 0002 0000 1d00 0000
 ```
 
-This is the 64 bytes of the second inode representing the "/" directory. First
+This is the 64 bytes of the first inode representing the "/" directory. First
 two bytes is `0100` which is 1 in little-endian. This means that this file is a
 directory (`type` is `T_DIR`).  `major` and `minor` are both zero, `nlink` is 1.
 `nlink`>0 signifies that this inode is "live" and is not part of a deleted file.

@@ -102,18 +102,3 @@ lapicid(void)
     return 0;
   return lapic[ID] >> 24;
 }
-
-// Acknowledge interrupt.
-void
-lapiceoi(void)
-{
-  if(lapic)
-    lapicw(EOI, 0);
-}
-
-// Spin for a given number of microseconds.
-// On real hardware would want to tune this dynamically.
-void
-microdelay(int us)
-{
-}

@@ -4,16 +4,6 @@
 
 extern char end[]; // first address after kernel loaded from ELF file
 
-void
-halt(void)
-{
-  cprintf("Bye COL%d!\n\0", 331);
-  outw(0x604, 0x2000);
-  // For older versions of QEMU, 
-  outw(0xB004, 0x2000);
-}
-
-
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.

@@ -82,6 +82,16 @@ cprintf(char *fmt, ...)
 }
 
 void
+halt(void)
+{
+  cprintf("Bye COL%d!\n\0", 331);
+  outw(0x602, 0x2000);
+  // For older versions of QEMU, 
+  outw(0xB002, 0x2000);
+  for(;;);
+}
+
+void
 panic(char *s)
 {
   int i;
@@ -97,7 +107,7 @@ panic(char *s)
   for(i=0; i<10; i++)
     cprintf(" %p", pcs[i]);
   panicked = 1; // freeze other CPU
-  for(;;);
+  halt();
 }
 
 #define BACKSPACE 0x100

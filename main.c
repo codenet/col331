@@ -20,7 +20,7 @@ welcome(void) {
     foodir = ialloc(ROOTDEV, T_DIR);
     iread(foodir);
     dirlink(foodir, ".", foodir->inum);
-    dirlink(foodir, "..", foodir->inum);
+    dirlink(foodir, "..", root->inum);
     dirlink(root, "foo", foodir->inum);
   }
   

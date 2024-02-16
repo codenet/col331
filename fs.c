@@ -142,6 +142,7 @@ static uint
 bmap(struct inode *ip, uint bn)
 {
   struct buf *bp;
+  uint addr;
 
   if(bn < NDIRECT){
     return ip->addrs[bn];
@@ -152,7 +153,9 @@ bmap(struct inode *ip, uint bn)
     // Load indirect block
     bp = bread(ip->dev, ip->addrs[NDIRECT]);
     uint *a = (uint*)bp->data;
-    return a[bn];
+    addr = a[bn];
+    brelse(bp);
+    return addr;
   }
 
   panic("bmap: out of range");

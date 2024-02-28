@@ -21,6 +21,14 @@ OBJS = \
 # Using native tools (e.g., on X86 Linux)
 #TOOLPREFIX = 
 
+# For ARM based MacOS machines
+# Workaround for newer gcc versions
+MAC_CCFLAGS := $(shell if [[ "$(shell uname -s)" == "Darwin" && "$(shell uname -m)" == "arm64" ]]; then \
+	echo "-Wno-error=infinite-recursion -Wno-error=array-bounds"; \
+	else \
+	echo ""; \
+fi)
+
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
 TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \
@@ -64,6 +72,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
+CFLAGS += $(MAC_CCFLAGS)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''

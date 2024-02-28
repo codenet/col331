@@ -67,7 +67,7 @@ Now, we can read the data blocks from `fs.img`.  29th block starts at address
 
 This is the "/" directory. A directory is essentially a file containing a
 sequence of directory entries defined in `struct dirent`. The `dirent` occupies
-16 bytes so in one data block we can store 512/16 = 8 directory entries. Notice 
+16 bytes so in one data block we can store 512/16 = 32 directory entries. Notice 
 that we will not allow specifying file and directory names to be greater than 14
 characters. The first two directory entries map `.` and `..` (0x2e=. in ASCII)
 to inode number 1 which is the same as the "/" directory.  The third directory

@@ -20,8 +20,8 @@ seginit(void)
   c = &cpus[cpuid()];
   c->gdt[SEG_KCODE] = SEG(STA_X|STA_R, 0, 0xffffffff, 0);
   c->gdt[SEG_KDATA] = SEG(STA_W, 0, 0xffffffff, 0);
-  c->gdt[SEG_UCODE] = SEG(STA_X|STA_R, STARTPROC, (PROCSIZE << 12) - 1, DPL_USER);
-  c->gdt[SEG_UDATA] = SEG(STA_W, STARTPROC, (PROCSIZE << 12) - 1, DPL_USER);
+  c->gdt[SEG_UCODE] = SEG(STA_X|STA_R, STARTPROC, ((PROCSIZE-1) << 12), DPL_USER);
+  c->gdt[SEG_UDATA] = SEG(STA_W, STARTPROC, ((PROCSIZE-1) << 12), DPL_USER);
   lgdt(c->gdt, sizeof(c->gdt));
 }
 

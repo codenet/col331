@@ -1,7 +1,7 @@
-all: va null leak uninitread overflow useafterfree invalidfree doublefree
+all: va null leak uninitread overflow useafterfree invalidfree doublefree nicedemo
 
 clean:
-	rm -f va null leak uninitread overflow useafterfree invalidfree doublefree
+	rm -f va null leak uninitread overflow useafterfree invalidfree doublefree nicedemo
 
 va: va.c
 	gcc -o va va.c -Wall -no-pie
@@ -26,3 +26,6 @@ doublefree: doublefree.c
 
 uninitread: uninitread.c
 	gcc -g -o uninitread uninitread.c
+
+nicedemo: nicedemo.c
+	gcc -g -o nicedemo nicedemo.c

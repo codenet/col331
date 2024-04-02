@@ -68,7 +68,7 @@ number means that we have more privilege.
 
 Hardware determines the *current privilege level (CPL)* by the least significant
 two bits of the code selector register. Similarly, least significant two bits of
-data segments define *required privilege level (RPL)* for the segment. This
+data segments define *requested privilege level (RPL)* for the segment. This
 means that this data segment can be read/written by code running at a privilege
 level of RPL or higher (i.e, with CPL <= RPL). Similarly, *descriptor privilege
 level (DPL)* is also set in segment descriptor set in GDT. Note how `pinit`

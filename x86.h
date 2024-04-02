@@ -85,13 +85,6 @@ lidt(struct gatedesc *p, int size)
   asm volatile("lidt (%0)" : : "r" (pd));
 }
 
-static inline uint
-readeflags(void)
-{
-  uint eflags;
-  asm volatile("pushfl; popl %0" : "=r" (eflags));
-  return eflags;
-}
 
 static inline void
 cli(void)

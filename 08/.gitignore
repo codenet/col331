@@ -1,5 +1,13 @@
+**swp
 p1
 p2
 p3
 p4
 p4.output
+fork-cow
+fork-fd
+fork-fd2
+pipe
+dup
+nodup
+*.txt

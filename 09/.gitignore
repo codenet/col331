@@ -1,0 +1,4 @@
+*.s
+threads-safe
+peterson-breaks
+peterson-fence

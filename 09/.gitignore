@@ -2,3 +2,4 @@
 threads-safe
 peterson-breaks
 peterson-fence
+atomic

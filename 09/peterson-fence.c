@@ -15,6 +15,7 @@ void* producer() {
 	turn=CONSUMER;
 	__sync_synchronize();	// software and hardware barrier
 	while(flag[CONSUMER] && turn==CONSUMER);
+	asm volatile("":::"memory");	// software barrier
 	counter++;
 	asm volatile("":::"memory");	// software barrier
 	flag[PRODUCER]=0;
@@ -26,6 +27,7 @@ void* consumer() {
 	turn=PRODUCER;
 	__sync_synchronize();	// software and hardware barrier
 	while(flag[PRODUCER] && turn==PRODUCER);
+	asm volatile("":::"memory");	// software barrier
 	counter--;
 	asm volatile("":::"memory");	// software barrier
 	flag[CONSUMER]=0;

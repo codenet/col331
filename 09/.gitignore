@@ -3,3 +3,9 @@ threads-safe
 peterson-breaks
 peterson-fence
 atomic
+alloc
+mypipe
+semlock
+sempipe
+wait
+wait-sem

@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "common.h"
 #include "common_threads.h"
-#define SZ 2
+#define SZ 10
 
 volatile char buf[SZ];
 volatile int reader = 0;

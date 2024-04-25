@@ -7,10 +7,6 @@ pthread_cond_t c = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 volatile int done = 0;
 
-/**
-
-*/
-
 void *child(void *arg) { 
 	int* counter = (int*) arg;
 	printf("child begin %d\n", *counter); 

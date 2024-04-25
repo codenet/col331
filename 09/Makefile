@@ -1,9 +1,9 @@
 CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pie -O2
 
-all: threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc
+all: threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
 
 clean:
-	rm threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc
+	rm threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
 
 threads-safe: threads-safe.c common.h common_threads.h
 	gcc $(CFLAGS) -o threads-safe threads-safe.c -Wall -pthread
@@ -40,3 +40,25 @@ sempipe: sempipe.c common.h common_threads.h
 
 sem-mpmc: sem-mpmc.c common.h common_threads.h
 	gcc $(CFLAGS) -o sem-mpmc sem-mpmc.c -Wall -pthread
+
+rw-ctr: rw-ctr.c common.h common_threads.h
+	gcc $(CFLAGS) -o rw-ctr rw-ctr.c -Wall -pthread
+
+rw-using-sems: rw-using-sems.c common.h common_threads.h
+	gcc $(CFLAGS) -o rw-using-sems rw-using-sems.c -Wall -pthread
+
+sems-using-lock-cv: sems-using-lock-cv.c common.h common_threads.h
+	gcc $(CFLAGS) -o sems-using-lock-cv sems-using-lock-cv.c -Wall -pthread
+
+dine-dead: dine-dead.c common.h common_threads.h
+	gcc $(CFLAGS) -o dine-dead dine-dead.c -Wall -pthread
+
+dine: dine.c common.h common_threads.h
+	gcc $(CFLAGS) -o dine dine.c -Wall -pthread
+
+dead: dead.c common.h common_threads.h
+	gcc $(CFLAGS) -o dead dead.c -Wall -pthread
+
+dead-fix: dead-fix.c common.h common_threads.h
+	gcc $(CFLAGS) -o dead-fix dead-fix.c -Wall -pthread
+

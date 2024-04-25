@@ -9,3 +9,10 @@ semlock
 sempipe
 wait
 wait-sem
+rw-ctr
+rw-using-sems
+sems-using-lock-cv
+dine-dead
+dine
+dead
+dead-fix

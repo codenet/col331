@@ -13,8 +13,10 @@
 #include "defs.h"
 #include "param.h"
 #include "stat.h"
-#include "mmu.h"
-#include "proc.h"
+// #include "mmu.h"
+// We don't need x86 mmu macros for fs code
+// #include "proc.h" 
+// We don't need process APIs in the fs code 
 #include "fs.h"
 #include "buf.h"
 #include "file.h"

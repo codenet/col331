@@ -175,15 +175,19 @@ log_write(struct buf *b)
 {
   int i;
 
-  if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
-    panic("too big a transaction");
 
   for (i = 0; i < log.lh.n; i++) {
     if (log.lh.block[i] == b->blockno)   // log absorbtion
       break;
   }
-  log.lh.block[i] = b->blockno;
+
   if (i == log.lh.n)
     log.lh.n++;
+        // prevents unnecessary panic
+
+  if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
+    panic("too big a transaction");
+
+  log.lh.block[i] = b->blockno;
   b->flags |= B_DIRTY; // prevent eviction
 }

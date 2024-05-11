@@ -19,7 +19,6 @@ int main(int argc, char *argv[]) {
 		close(STDOUT_FILENO);
 		dup(p[1]);
 		close(p[0]);
-		close(p[1]);
 
 		// now exec "wc"...
 		char *myargs[3];
@@ -34,7 +33,7 @@ int main(int argc, char *argv[]) {
 		dup(p[0]);
 		char* c = (char*) calloc(1, sizeof(char));
 		while (c[0] != EOF) { 
-			int r = read(STDIN_FILENO, c, sizeof(char));
+			int r = read(p[0], c, sizeof(char));
 			if(r < 1) return 0;
 			if(c[0]>='a' && c[0] <= 'z')
 				c[0] = c[0] - 'a' + 'A';

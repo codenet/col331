@@ -14,7 +14,7 @@ bar:
 	.type	main, @function
 main:
 	leal	4(%esp), %ecx	# ecx = esp + 4
-	andl	$-16, %esp	# (esp & 0xF0). 16-bit align
+	andl	$-16, %esp	# (esp & 0xF0). 16-byte align
 	pushl	-4(%ecx)	# push *(ecx-4)
 	pushl	%ebp		# push ebp. esp-=4
 	movl	%esp, %ebp	# ebp = esp
@@ -29,7 +29,7 @@ main:
 	movl	$0, %eax	# eax = 0 (return value)
 	movl	-4(%ebp), %ecx	# ecx = *(ebp-4)
 	leave
-	leal	-4(%ecx), %esp	# esp = *(ecx-4)
+	leal	-4(%ecx), %esp	# esp = ecx-4
 	ret
 	.size	main, .-main
 	.ident	"GCC: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0"

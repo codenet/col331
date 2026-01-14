@@ -259,7 +259,7 @@ class Disk:
         print('Bad address description (%s)' % value)
         print('The address description must be a comma-separated list of length three, without spaces.')
         print('For example, "10,100,0" would indicate that 10 addresses should be generated, with')
-        print('100 as the maximum value, and 0 as the minumum. A max of -1 means just use the highest')
+        print('100 as the maximum value, and 0 as the minimum. A max of -1 means just use the highest')
         print('possible value as the max address to generate.')
         sys.exit(1)
     

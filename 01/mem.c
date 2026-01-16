@@ -18,6 +18,5 @@ int main(int argc, char *argv[]) {
 		*p = *p + 1;
 		printf("value of p: %d\n", *p);
 	}
-	return 0;
 }
 

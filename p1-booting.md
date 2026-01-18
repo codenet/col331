@@ -34,8 +34,9 @@ identical virtual and physical addresses, changes from 16-bit mode to 32-bit
 mode, and finally jumps into `bootmain.c`. These steps are described as is in
 Section 9.9.1, Volume 3A, Part 1 of Intel SDM.
 
-Changing from 16-bit to 32-bit mode changes the code segment register to `0x8`.
-All the other segment registers are zero.
+Changing from 16-bit to 32-bit mode changes the code segment register to `0x8`,
+data segment registers (DS, ES, SS) to `0x10`, while unused segments like 
+FS and GS are zeroed.
 
 `bootmain.c` has to now load the OS from the disk and give control to it. It
 first reads the next 4KB from the disk into memory location `0x10000`. The OS is

@@ -2,7 +2,6 @@ struct rtcdate;
 
 // console.c
 void            cprintf(char*, ...);
-void            halt(void) __attribute__((noreturn));
 void            panic(char*) __attribute__((noreturn));
 
 // ioapic.c

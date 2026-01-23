@@ -555,6 +555,83 @@ class Disk:
                 trackList.append((block, index))
         assert(trackList != [])
         return trackList
+    
+
+    def DoSCAN(self, rList):
+        sameDirection = []  # requests in current scan direction
+        opposite = []       # requests in opposite direction
+        
+        for (block, index) in rList:
+            if self.requestState[index] == STATE_DONE:
+                continue
+            track = self.blockToTrackMap[block]
+            
+            if self.scanDir == 1:  # moving toward higher tracks
+                if track >= self.armTrack:
+                    sameDirection.append((block, index, track))
+                else:
+                    opposite.append((block, index, track))
+            else:  # moving toward lower tracks
+                if track <= self.armTrack:
+                    sameDirection.append((block, index, track))
+                else:
+                    opposite.append((block, index, track))
+        
+        # If there are requests in the current direction, service them
+        if len(sameDirection) > 0:
+            # Sort by track in scan direction
+            if self.scanDir == 1:
+                sameDirection.sort(key=lambda x: x[2])  # ascending
+            else:
+                sameDirection.sort(key=lambda x: x[2], reverse=True)  # descending
+            # Return list without track info for SATF processing
+            return [(b, i) for (b, i, t) in sameDirection]
+        
+        # No requests left in current direction:
+        # SCAN must go to the boundary first, then reverse direction
+        self.scanDir *= -1  # reverse direction
+        
+        if len(opposite) > 0:
+            if self.scanDir == 1:
+                opposite.sort(key=lambda x: x[2])  # ascending
+            else:
+                opposite.sort(key=lambda x: x[2], reverse=True)  # descending
+            return [(b, i) for (b, i, t) in opposite]
+        
+        # Should not reach here if there are pending requests
+        print('ERROR: DoSCAN called with no valid requests')
+        sys.exit(1)
+
+
+    def DoCSCAN(self, rList):
+        ahead = []   # requests ahead in scan direction
+        behind = []  # requests behind (will be serviced after wrap)
+        
+        for (block, index) in rList:
+            if self.requestState[index] == STATE_DONE:
+                continue
+            track = self.blockToTrackMap[block]
+            
+            # C-SCAN always moves toward higher tracks, wraps to track 0
+            if track >= self.armTrack:
+                ahead.append((block, index, track))
+            else:
+                behind.append((block, index, track))
+        
+        # Service requests ahead first
+        if len(ahead) > 0:
+            ahead.sort(key=lambda x: x[2])  # ascending order
+            return [(b, i) for (b, i, t) in ahead]
+        
+        # No requests left ahead:
+        # C-SCAN must go to the end of the disk, wrap around, and then service from track 0
+        if len(behind) > 0:
+            behind.sort(key=lambda x: x[2])  # ascending order
+            return [(b, i) for (b, i, t) in behind]
+        
+        # Should not reach here if there are pending requests
+        print('ERROR: DoCSCAN called with no valid requests')
+        sys.exit(1)
 
     def UpdateWindow(self):
         if self.fairWindow == -1 and self.currWindow > 0 and self.currWindow < len(self.requestQueue):
@@ -604,6 +681,14 @@ class Disk:
             trackList = self.DoSSTF(self.requestQueue[0:self.GetWindow()])
             # then, do SATF on those blocks (otherwise, will not do them in obvious order)
             (self.currentBlock, self.currentIndex) = self.DoSATF(trackList)
+        elif self.policy == 'SCAN':
+            # get requests in scan direction, then apply SATF
+            scanList = self.DoSCAN(self.requestQueue[0:self.GetWindow()])
+            (self.currentBlock, self.currentIndex) = self.DoSATF(scanList)
+        elif self.policy == 'C-SCAN' or self.policy == 'CSCAN':
+            # get requests in circular scan order, then apply SATF
+            cscanList = self.DoCSCAN(self.requestQueue[0:self.GetWindow()])
+            (self.currentBlock, self.currentIndex) = self.DoSATF(cscanList)
         else:
             print('policy (%s) not implemented' % self.policy)
             sys.exit(1)

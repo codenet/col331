@@ -1,8 +1,6 @@
 #include "types.h"
 #include "x86.h"
 
-extern char end[]; // first address after kernel loaded from ELF file
-
 int
 halt(void)
 {

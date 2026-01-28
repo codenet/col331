@@ -5,7 +5,7 @@ Self study the diff:
 
 # UART Documentation
 
-UART stands for Universal Asynchronous Reciever/Transmitter. It is an interface for asynchronous(without a synchronizing clock signal) serial communication in PCs.
+UART stands for Universal Asynchronous Receiver/Transmitter. It is an interface for asynchronous (without a synchronizing clock signal) serial communication in PCs.
 
 The uart.c file essentially describe the functions to communicate with the UART interface which in this case is the PC8250A UART(The exact part might be different as different models have been introduced over time, however the basic functionality and register mapping is consistent). 
 

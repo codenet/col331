@@ -53,6 +53,10 @@ mpsearch(void)
   uint p;
   struct mp *mp;
 
+#if defined(__GNUC__) 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Warray-bounds" 
+#endif
   // bda = (uchar *) P2V(0x400);
   bda = (uchar *) 0x400;
   if((p = ((bda[0x0F]<<8)| bda[0x0E]) << 4)){
@@ -65,7 +69,9 @@ mpsearch(void)
   }
   return mpsearch1(0xF0000, 0x10000);
 }
-
+#if defined(__GNUC__) 
+#pragma GCC diagnostic pop 
+#endif
 // Search for an MP configuration table.  For now,
 // don't accept the default configurations (physaddr == 0).
 // Check for correct signature, calculate the checksum and,

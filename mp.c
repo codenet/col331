@@ -14,6 +14,7 @@
 struct cpu cpus[NCPU];
 int ncpu;
 uchar ioapicid;
+uint* ioapicaddr;
 
 static uchar
 sum(uchar *addr, int len)
@@ -118,6 +119,7 @@ mpinit(void)
     case MPIOAPIC:
       ioapic = (struct mpioapic*)p;
       ioapicid = ioapic->apicno;
+      ioapicaddr = ioapic->addr;
       p += sizeof(struct mpioapic);
       continue;
     case MPBUS:

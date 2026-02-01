@@ -20,7 +20,7 @@
 #define INT_DISABLED   0x00010000  // Interrupt disabled
 
 volatile struct ioapic *ioapic;
-extern uint ioapicaddr;
+extern uint* ioapicaddr;
 
 // IO APIC MMIO structure: write reg, then read or write data.
 struct ioapic {

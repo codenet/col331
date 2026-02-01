@@ -14,7 +14,7 @@
 struct cpu cpus[NCPU];
 int ncpu;
 uchar ioapicid;
-uint ioapicaddr;
+uint* ioapicaddr;
 
 static uchar
 sum(uchar *addr, int len)

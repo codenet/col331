@@ -6,7 +6,7 @@
 #include "defs.h"
 #include "traps.h"
 
-#define IOAPIC  0xFEC00000   // Default physical address of IO APIC
+// #define IOAPIC  0xFEC00000   // No longer needed as we are using discovered ioapic addr instead of default one
 
 #define REG_ID     0x00  // Register index: ID
 #define REG_VER    0x01  // Register index: version
@@ -23,6 +23,7 @@
 #define INT_LOGICAL    0x00000800  // Destination is CPU id (vs APIC ID)
 
 volatile struct ioapic *ioapic;
+extern uint* ioapicaddr;
 
 // IO APIC MMIO structure: write reg, then read or write data.
 struct ioapic {
@@ -50,7 +51,7 @@ ioapicinit(void)
 {
   int i, id, maxintr;
 
-  ioapic = (volatile struct ioapic*)IOAPIC;
+  ioapic = (volatile struct ioapic*)ioapicaddr;
   maxintr = (ioapicread(REG_VER) >> 16) & 0xFF;
   id = ioapicread(REG_ID) >> 24;
   if(id != ioapicid)

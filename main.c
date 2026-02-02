@@ -9,7 +9,7 @@ extern char end[]; // first address after kernel loaded from ELF file
 static inline void
 welcome(void) {
   struct buf *b0 = bread(1, 0);
-  for(int i=0; i <= BSIZE; i++)
+  for(int i=0; i < BSIZE; i++)
     consputc(b0->data[i]);
   
   struct buf *b1 = bread(1, 1);

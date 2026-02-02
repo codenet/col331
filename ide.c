@@ -145,7 +145,7 @@ iderw(struct buf *b)
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID)
   {
     // Warning: If we do not call noop(), compiler generates code that does not
-    // read "b->flags" again and therefore never come out of this while loop. 
+    // read "b->flags" again and therefore the execution never leaves this while loop. 
     // "b->flags" is modified by the trap handler in ideintr().  
     noop();
   }

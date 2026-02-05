@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
 	sprintf(buffer, "COL331");
 
 	int fd2 = open("/tmp/file", O_RDWR);
-	lseek(fd, 6, SEEK_SET);
-	rc = write(fd, buffer, strlen(buffer));
+	lseek(fd2, 6, SEEK_SET);
+	rc = write(fd2, buffer, strlen(buffer));
 	assert(rc == (strlen(buffer)));
 
 	int fd3 = open("/tmp/file", O_WRONLY | O_APPEND);

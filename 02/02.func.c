@@ -6,5 +6,5 @@ int bar() {
 int func() {
 	int x = 11;
 	bar();
-	foo(x, 23);
+	return foo(x, 23);
 }

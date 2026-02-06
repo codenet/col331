@@ -95,7 +95,7 @@ xv6.img: bootblock kernel
 	dd if=bootblock of=xv6.img conv=notrunc
 	dd if=kernel of=xv6.img seek=1 conv=notrunc
 
-fs:
+fs.img:
 	dd if=/dev/zero of=fs.img count=2
 	dd if=welcome.txt of=fs.img conv=notrunc
 
@@ -144,7 +144,7 @@ endif
 # QEMUEXTRA = -no-reboot -d int,cpu_reset
 QEMUOPTS = -drive file=xv6.img,index=0,media=disk,format=raw -drive file=fs.img,index=1,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: xv6.img
+qemu: xv6.img fs.img
 	$(QEMU) -nographic $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl

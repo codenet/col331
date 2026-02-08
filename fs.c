@@ -43,7 +43,7 @@ readsb(int dev, struct superblock *sb)
 // list of blocks holding the file's content.
 //
 // The inodes are laid out sequentially on disk at
-// sb.startinode. Each inode has a number, indicating its
+// sb.inodestart. Each inode has a number, indicating its
 // position on the disk.
 //
 // The kernel keeps a cache of in-use inodes in memory.
@@ -146,6 +146,7 @@ bmap(struct inode *ip, uint bn)
     // Load indirect block
     bp = bread(ip->dev, ip->addrs[NDIRECT]);
     uint *a = (uint*)bp->data;
+    brelse(bp);
     return a[bn];
   }
 

@@ -131,7 +131,6 @@ iread(struct inode *ip)
 // listed in block ip->addrs[NDIRECT].
 
 // Return the disk block address of the nth block in inode ip.
-// If there is no such block, bmap allocates one.
 static uint
 bmap(struct inode *ip, uint bn)
 {

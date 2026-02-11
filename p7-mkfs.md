@@ -44,7 +44,7 @@ map blocks.
 This is the 64 bytes of the second inode representing the "/" directory. First
 two bytes is `0100` which is 1 in little-endian. This means that this file is a
 directory (`type` is `T_DIR`).  `major` and `minor` are both zero, `nlink` is 1.
-`size` is `0002 0000` which is basically `0x0000 0200` = 8192 bytes. The first
+`size` is `0002 0000` which is basically `0x0000 0200` = 512 bytes. The first
 address is `1d00 0000` which is basically `0x1d` = 29 (the first data block).
 
 The next 64 bytes represent the "welcome.txt" file.

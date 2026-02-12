@@ -50,7 +50,6 @@ binit(void)
 
 // Look through buffer cache for block on device dev.
 // If not found, allocate a buffer.
-// In either case, return locked buffer.
 static struct buf*
 bget(uint dev, uint blockno)
 {
@@ -79,7 +78,7 @@ bget(uint dev, uint blockno)
   panic("bget: no buffers");
 }
 
-// Return a locked buf with the contents of the indicated block.
+// Return a buf with the contents of the indicated block.
 struct buf*
 bread(uint dev, uint blockno)
 {
@@ -92,7 +91,7 @@ bread(uint dev, uint blockno)
   return b;
 }
 
-// Write b's contents to disk.  Must be locked.
+// Write b's contents to disk.
 void
 bwrite(struct buf *b)
 {

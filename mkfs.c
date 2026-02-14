@@ -158,7 +158,7 @@ main(int argc, char *argv[])
   // fix size of root inode dir
   rinode(rootino, &din);
   off = xint(din.size);
-  off = ((off/BSIZE) + 1) * BSIZE;
+  off = ((off + BSIZE - 1) / BSIZE) * BSIZE;
   din.size = xint(off);
   winode(rootino, &din);
 

@@ -13,7 +13,7 @@ welcome(void) {
   struct inode* root = iget(ROOTDEV, ROOTINO);
   iread(root);
 
-	struct dirent entries[4];
+	struct dirent entries[3]; // we only have 3 entries in the root directory: ., .. and welcome.txt
   int n = readi(root, (char *) entries, 0, sizeof(entries));
   cprintf("Read %d bytes from inode of root directory\n", n);
   for(int i = 0; i < 4; i ++) {

@@ -180,10 +180,9 @@ log_write(struct buf *b)
 
   for (i = 0; i < log.lh.n; i++) {
     if (log.lh.block[i] == b->blockno)   // log absorbtion
-      break;
+      return;
   }
   log.lh.block[i] = b->blockno;
-  if (i == log.lh.n)
-    log.lh.n++;
+  log.lh.n++;
   b->flags |= B_DIRTY; // prevent eviction
 }

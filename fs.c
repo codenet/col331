@@ -323,7 +323,6 @@ itrunc(struct inode *ip)
 }
 
 // Copy stat information from inode.
-// Caller must hold ip->lock.
 void
 stati(struct inode *ip, struct stat *st)
 {

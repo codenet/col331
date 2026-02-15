@@ -39,7 +39,7 @@ All the other segment registers are zero.
 
 `bootmain.c` has to now load the OS from the disk and give control to it. It
 first reads the next 4KB from the disk into memory location `0x10000`. The OS is
-stored in an *Executable Linux File (ELF) format*. The format specifies a standard
+stored in an *Executable and Linkable (ELF) format*. The format specifies a standard
 on how an executable is stored so that we can safely give control to it. This
 format enables us to move executables from one machine to another (assuming same
 ISA etc). Our OS is just another executable.

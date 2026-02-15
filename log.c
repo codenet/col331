@@ -37,7 +37,6 @@ struct logheader {
 struct log {
   int start;
   int size;
-  int committing;  // in commit(), please wait.
   int dev;
   struct logheader lh;
 };

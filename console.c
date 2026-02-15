@@ -45,7 +45,6 @@ cprintf(char *fmt, ...)
   char *s;
 
   if (fmt == 0)
-    // panic("null fmt");
     return;
 
   argp = (uint*)(void*)(&fmt + 1);
@@ -88,7 +87,7 @@ halt(void)
 {
   cprintf("Bye COL%d!\n\0", 331);
   outw(0x602, 0x2000);
-  // For older versions of QEMU, 
+  // For older versions of QEMU
   outw(0xB002, 0x2000);
   for(;;);
 }

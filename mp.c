@@ -54,10 +54,6 @@ mpsearch(void)
   struct mp *mp;
 
   // bda = (uchar *) P2V(0x400);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#pragma GCC diagnostic ignored "-Wstringop-overread"
   bda = (uchar *) 0x400;
   if((p = ((bda[0x0F]<<8)| bda[0x0E]) << 4)){
     if((mp = mpsearch1(p, 1024)))
@@ -67,8 +63,6 @@ mpsearch(void)
     if((mp = mpsearch1(p-1024, 1024)))
       return mp;
   }
-#pragma GCC diagnostic pop
-
   return mpsearch1(0xF0000, 0x10000);
 }
 

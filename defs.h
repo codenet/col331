@@ -58,12 +58,10 @@ extern uchar    ioapicid;
 void            ioapicinit(void);
 
 // lapic.c
-void            cmostime(struct rtcdate *r);
 int             lapicid(void);
 extern volatile uint*    lapic;
 void            lapiceoi(void);
 void            lapicinit(void);
-void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
@@ -73,11 +71,9 @@ void            begin_op();
 void            end_op();
 
 // mp.c
-extern int      ismp;
 void            mpinit(void);
 
 // picirq.c
-void            picenable(int);
 void            picinit(void);
 
 // proc.c

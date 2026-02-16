@@ -19,8 +19,13 @@ welcome(void) {
     cprintf("/foo not found. Creating!\n");
     foodir = ialloc(ROOTDEV, T_DIR);
     iread(foodir);
+    // Initialize directory link counts
+    foodir->nlink = 2;       // "." and parent's reference
+    iupdate(foodir);
+    root->nlink++;       // new subdirectory increases parent's link count
+    iupdate(root);
     dirlink(foodir, ".", foodir->inum);
-    dirlink(foodir, "..", foodir->inum);
+    dirlink(foodir, "..",root->inum);
     dirlink(root, "foo", foodir->inum);
   }
   
@@ -30,6 +35,9 @@ welcome(void) {
     cprintf("/foo/greet.txt not found. Creating!\n");
     struct inode* wtxt_orig = namei("/welcome.txt");
     dirlink(foodir, "greet.txt", wtxt_orig->inum);
+    // Increment link count of target inode
+    wtxt_orig->nlink++;
+    iupdate(wtxt_orig);
     wtxt=namei("/foo/greet.txt");
   }
 

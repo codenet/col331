@@ -85,7 +85,7 @@ lapicinit(void)
   // Ack any outstanding interrupts.
   lapicw(EOI, 0);
 
-  // Send an Init Level De-Assert to synchronise arbitration ID's.
+  // Send an Init Level De-Assert to synchronise arbitration IDs.
   lapicw(ICRHI, 0);
   lapicw(ICRLO, BCAST | INIT | LEVEL);
   while(lapic[ICRLO] & DELIVS)

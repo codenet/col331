@@ -19,8 +19,11 @@ welcome(void) {
     cprintf("/foo not found. Creating!\n");
     foodir = ialloc(ROOTDEV, T_DIR);
     iread(foodir);
+    char name[DIRSIZ];
+    struct inode* parent = nameiparent("/foo", name);
+    iread(parent);
     dirlink(foodir, ".", foodir->inum);
-    dirlink(foodir, "..", foodir->inum);
+    dirlink(foodir, "..", parent->inum);
     dirlink(root, "foo", foodir->inum);
   }
   

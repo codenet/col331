@@ -12,7 +12,7 @@ worker:
 	addl	$1, %eax	# eax += 1
 	cmpl	%edx, %eax	# ZF if edx == eax
 	jne	.L3
-	addl	%ecx, %edx	# edx = ecx
+	addl	%ecx, %edx	# edx += ecx
 	movl	%edx, counter	# counter = edx
 .L2:
 	movl	$0, %eax	# eax = 0

@@ -46,7 +46,7 @@ two bytes is `0100` which is 1 in little-endian. This means that this file is a
 directory (`type` is `T_DIR`).  `major` and `minor` are both zero, `nlink` is 1.
 `nlink`>0 signifies that this inode is "live" and is not part of a deleted file.
 We might later see that `nlink` can be greater than 1 when we create symbolic
-links to the same file. Notice that `.` and `..` do not count towards `nlink`; 
+links to the same file. Notice that `.` does not count towards `nlink`; 
 otherwise a directory may never get deleted.
 
 `size` is `0000 0200` which is basically `0x0002 0000` = 8192 bytes. The first

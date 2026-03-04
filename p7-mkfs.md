@@ -20,18 +20,18 @@ This is the `struct superblock`:
   the file system.
 * `nblock`=`0x03cb` = 971. This indicates the number of available data blocks.
   (more below).
-* `ninodes`=`0xc8` = 200. Hence, inodes are present in 200/8 = 25 blocks.
+* `ninodes`=`0xc8` = 200. Hence, inodes are present in 200/8 = 25 blocks. But `mkfs.c` sets `ninodeblocks` to 26.
 * `nlog` = 0, `logstart`=2. Ignore this for now.
 * `inodestart`=2. This is saying that inodes start from the second block (right
   after the superblock).
-* `bmapstart`=`0x1c`=28. Free bit map starts after all the 25 inodes.
+* `bmapstart`=`0x1c`=28. Free bit map starts after all the 26 inodes.
 
-1 boot block + 1 super block + number of data blocks + number of inode blocks
-(25) + number of bitmap blocks (2) = total number of blocks (1000). 
+1 boot block + 1 super block + number of data blocks (971) + number of inode blocks
+(26) + number of bitmap blocks (1) = total number of blocks (1000). 
 
 Bitmap blocks spend 1 bit to keep track of free data blocks. For 1000 total
 blocks, we need 1000 bits, i.e, 125 bytes. This can be represented in just 1 512
-byte block. But `mkfs.c` sets `nbitmap` to 2.
+byte block.
 
 So we get 971 data blocks. Data blocks start at block number 29, after free bit
 map blocks.

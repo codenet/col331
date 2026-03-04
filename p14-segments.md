@@ -41,7 +41,7 @@ address translation.
 
 `info registers` also shows `GDT=00007c60 00000017`. This means that the base of
 GDT is at `7c60` and the size is `0x17=23`. Each entry in GDT is of 8 bytes.
-There are three entries; size locates the last bit of GDT which will be at GDT
+There are three entries; size locates the last byte of GDT which will be at GDT
 base + 8*3-1(=23). Now in gdb, we can run `x /24xb 0x7c60` to see 24 bytes
 starting at the base address of GDT.
 

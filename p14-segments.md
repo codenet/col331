@@ -24,7 +24,7 @@ Every memory access goes through an address translation mechanism as shown in
 Figure 3.5. A logical address in `EIP` register is translated using the code
 segment. All stack based instructions use the stack segment. For example, the
 `push` and `pop` instructions and setting/getting `ESP` and `EBP` registers.
-Other memory instructions such as `mov`, `lea` etc are translated using the data
+Other memory instructions such as `mov` etc are translated using the data
 segment.
 
 Since the contents of GDT are used repeatedly in every address translation, the 

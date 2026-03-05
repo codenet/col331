@@ -8,8 +8,8 @@ In this part, we will start making our processes more interesting. If we run the
 OS, we see that our processes are able to print something to the console. This
 is implemented using *system calls*. Essentially, system calls allow processes
 to ask the OS to do some work on their behalf. System calls reuse the hardware's
-trap handling mechanism. Previously, when an hardware interrupt (like a timer
-interrupt) occured, the hardware was saving all the registers, moving from ring
+trap handling mechanism. Previously, when a hardware interrupt (like a timer
+interrupt) occurred, the hardware was saving all the registers, moving from ring
 3 to ring 0, and then giving control to the OS. OS would handle the interrupt,
 restore the registers, and give control back to the process.
 

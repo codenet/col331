@@ -31,27 +31,9 @@ outw(ushort port, ushort data)
 }
 
 static inline void
-outsl(int port, const void *addr, int cnt)
-{
-  asm volatile("cld; rep outsl" :
-               "=S" (addr), "=c" (cnt) :
-               "d" (port), "0" (addr), "1" (cnt) :
-               "cc");
-}
-
-static inline void
 stosb(void *addr, int data, int cnt)
 {
   asm volatile("cld; rep stosb" :
-               "=D" (addr), "=c" (cnt) :
-               "0" (addr), "1" (cnt), "a" (data) :
-               "memory", "cc");
-}
-
-static inline void
-stosl(void *addr, int data, int cnt)
-{
-  asm volatile("cld; rep stosl" :
                "=D" (addr), "=c" (cnt) :
                "0" (addr), "1" (cnt), "a" (data) :
                "memory", "cc");

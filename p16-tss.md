@@ -2,11 +2,11 @@
 
 ### Handling interrupts while a process is running
 
-The previous part did not handle interrupts. Before running the task, we had
+The previous part did not handle interrupts while a process is already running. Before running the task, we had
 changed the stack segment `ss` (in `pinit`). But when interrupt happens, the
 processor does not want to use the same stack segment as then it will be writing
-"OS level" information like the interrupt number into the process' address
-space. This could be dangerous. For instance, if the OS were running on multiple
+"OS-level" information like the interrupt number into the process' address
+space. This could be dangerous and lead to data corruptions. For instance, if the OS were running on multiple
 CPUs, the same process could also be running on the other CPU. The process could
 then read or write this memory region from the other CPU. (We will see how
 multiple CPUs work in xv6 later.)
@@ -48,7 +48,7 @@ perform IO. The `eflags` register is described in Section 3.4.3 of Intel SDM
 Volume 1.
 
 But, we might want to selectively give access to some ports (such as only a few
-LEDs but not the whole disk). The OS can further set the "I/O permission bit map"
+LEDs but not the whole disk). The OS can further set the "I/O permission bit map"('iomb')
 in the process' task state segment (TSS), described in Section 18.5.2 in Intel
 SDM, Volume 1.
 

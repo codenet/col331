@@ -63,4 +63,4 @@ won't change if it is not written to.  Volatile is needed to make sure that
 compiler doesn't do any optimisations such as storing the value of counter in
 any temporary variables.  But still, we are trying to access the value of the
 counter in the critical section without a lock.  So a race condition can still
-occur due to our own fault of writing the incorrect programme.
+occur due to our own fault of writing the incorrect program.

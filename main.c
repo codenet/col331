@@ -34,7 +34,7 @@ main(void)
   lapicinit();     // interrupt controller
   picinit();       // disable pic
   ioapicinit();    // another interrupt controller
-  consoleinit();   // console hardware
+  consoleinit();   // register console device handlers
   uartinit();      // serial port
   ideinit();       // disk 
   tvinit();        // trap vectors

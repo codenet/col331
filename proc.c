@@ -55,7 +55,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  sp = (char*)(STARTPROC + (PROCSIZE>>12));
+  sp = (char*)(STARTPROC + (PROCSIZE<<12));
 
   // Leave room for trap frame.
   sp -= sizeof *p->tf;

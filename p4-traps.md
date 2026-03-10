@@ -2,7 +2,7 @@
 
 Now that our APICs are initialized and set up, we can start handling interrupts.
 In this part, we handle the periodic timer interrupts that we had set in
-`lapic.c`.  The interrupt handler in `trap.c` prints a message everytime the
+`lapic.c`.  The interrupt handler in `trap.c` prints a message every time the
 timer ticks.
 
 In `main.c`, we call `sti` to enable interrupt handling on CPU. However before
@@ -55,6 +55,6 @@ hardware when the interrupt had happened.
 Why do we not call `lidt` directly in `tvinit`? Why do we have two separate
 methods?
 
-Later when we enable multi-CPU support in our OS only CPU zero will call 
+Later, when we enable multi-CPU support in our OS, only CPU zero will call
 `tvinit` to prepare the `idt` array, and then all the CPUs will call `lidt`.
 

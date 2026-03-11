@@ -33,8 +33,7 @@ Bitmap blocks spend 1 bit to keep track of free data blocks. For 1000 total
 blocks, we need 1000 bits, i.e, 125 bytes. This can be represented in just 1 512
 byte block. But `mkfs.c` sets `nbitmap` to 2.
 
-So we get 971 data blocks. Data blocks start at block number 29, after free bit
-map blocks.
+So we get 971 data blocks. Data blocks start at block number 29, after free bitmap blocks.
 
 
 ```

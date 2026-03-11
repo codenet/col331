@@ -1,6 +1,6 @@
 ## File system
 
-File system is a basically an on-disk linked data structure (tree) with
+File system is basically an on-disk linked data structure (tree) with
 directories pointing to other directories and files. We need to define how the
 file contents and pointers are managed over disk blocks to define our file
 system.
@@ -18,13 +18,13 @@ in a hex editor, we see:
 This is the `struct superblock`:
 * `size` = `0x03e8` = 1,000 (`FSSIZE`). This indicates the number of blocks in
   the file system.
-* `nblock`=`0x03cb` = 971. This indicates the number of available data blocks.
+* `nblocks`=`0x03cb` = 971. This indicates the number of available data blocks.
   (more below).
 * `ninodes`=`0xc8` = 200. Hence, inodes are present in 200/8 = 25 blocks.
 * `nlog` = 0, `logstart`=2. Ignore this for now.
 * `inodestart`=2. This is saying that inodes start from the second block (right
   after the superblock).
-* `bmapstart`=`0x1c`=28. Free bit map starts after all the 25 inodes.
+* `bmapstart`=`0x1c`=28. Free bitmap starts after all the 25 inodes.
 
 1 boot block + 1 super block + number of data blocks + number of inode blocks
 (25) + number of bitmap blocks (2) = total number of blocks (1000). 

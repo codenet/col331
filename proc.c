@@ -5,8 +5,10 @@
 #include "mmu.h"
 #include "x86.h"
 #include "proc.h"
+#include "spinlock.h"
 
 struct {
+  struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
 
@@ -45,15 +47,17 @@ allocproc(void)
   struct proc *p;
   char *sp;
 
+  acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-
+  release(&ptable.lock); // (if no slots found)
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  release(&ptable.lock); // (safe to release now that state is EMBRYO)
 
   if((p->offset = kalloc()) == 0){
     p->state = UNUSED;
@@ -76,10 +80,17 @@ found:
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
 
+  // Set up new context to start executing at forkret,
+  // which returns to trapret.
+  sp -= 4;                             
+  *(uint*)sp = (uint)trapret;          
+
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->eip = (uint)trapret;
+  // p->context->eip = (uint)trapret;
+  
+  p->context->eip = (uint)forkret;
 
   return p;
 }
@@ -88,6 +99,8 @@ found:
 void
 pinit(void)
 {
+  initlock(&ptable.lock, "ptable");
+  
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
@@ -130,6 +143,7 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
+    acquire(&ptable.lock); // (lock before scanning processes)
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -142,6 +156,7 @@ scheduler(void)
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
     }
+    release(&ptable.lock); // (release when done scanning)
   }
 }
 
@@ -172,8 +187,17 @@ sched(void)
 void
 yield(void)
 {
+  acquire(&ptable.lock);
   myproc()->state = RUNNABLE;
   sched();
+  release(&ptable.lock);
+}
+
+void
+forkret(void)
+{
+  // Release the lock held by the scheduler
+  release(&ptable.lock);
 }
 
 void
@@ -187,7 +211,7 @@ procdump(void)
   };
   struct proc *p;
   char *state;
-
+  acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -198,4 +222,5 @@ procdump(void)
     cprintf("%d %s %s", p->pid, state, p->name);
     cprintf("\n");
   }
+  release(&ptable.lock);
 }

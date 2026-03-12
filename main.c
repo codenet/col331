@@ -27,6 +27,7 @@ main(void)
   ideinit();       // disk 
   tvinit();        // trap vectors
   binit();         // buffer cache
+  fileinit();      // file table
   idtinit();       // load idt register
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes

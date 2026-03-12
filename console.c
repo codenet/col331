@@ -9,9 +9,13 @@
 #include "traps.h"
 #include "fs.h"
 #include "file.h"
+#include "spinlock.h"
 
 static int panicked = 0;
-
+struct {
+  struct spinlock lock;
+  int locking;
+} cons;
 static void
 printint(int xx, int base, int sign)
 {
@@ -48,6 +52,8 @@ cprintf(char *fmt, ...)
   if (fmt == 0)
     // panic("null fmt");
     return;
+  if(cons.locking)           
+    acquire(&cons.lock);     
 
   argp = (uint*)(void*)(&fmt + 1);
   for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
@@ -82,6 +88,8 @@ cprintf(char *fmt, ...)
       break;
     }
   }
+  if(cons.locking)           
+    release(&cons.lock);     
 }
 
 void
@@ -101,6 +109,7 @@ panic(char *s)
   uint pcs[10];
 
   cli();
+  cons.locking = 0; // force release of the console for the panic message
   cprintf("lapicid %d: panic: ", lapicid());
   cprintf(s);
   cprintf("\n");
@@ -214,6 +223,8 @@ consolewrite(struct inode *ip, char *buf, int n)
 void
 consoleinit(void)
 {
+  initlock(&cons.lock, "console"); 
+  cons.locking = 1;                
   devsw[CONSOLE].write = consolewrite;
   devsw[CONSOLE].read = consoleread;
 }

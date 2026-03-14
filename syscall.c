@@ -19,7 +19,7 @@ fetchint(uint addr, int *ip)
 {
   struct proc *curproc = myproc();
 
-  if(addr >= curproc->sz || addr+4 > curproc->sz) {
+  if(addr >= PGSIZE - KSTACKSIZE || addr+4 > PGSIZE - KSTACKSIZE) {
     return -1;
   }
   *ip = *(int*)(addr + curproc->offset);
@@ -35,10 +35,10 @@ fetchstr(uint addr, char **pp)
   char *s, *ep;
   struct proc *curproc = myproc();
 
-  if(addr >= curproc->sz)
+  if(addr >= PGSIZE - KSTACKSIZE)
     return -1;
   *pp = (char*)(addr + curproc->offset);
-  ep = (char*)(curproc->sz + curproc->offset);
+  ep = (char*)(PGSIZE - KSTACKSIZE + curproc->offset);
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -64,7 +64,7 @@ argptr(int n, char **pp, int size)
  
   if(argint(n, &i) < 0)
     return -1;
-  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
+  if(size < 0 || (uint)i >= PGSIZE - KSTACKSIZE || (uint)i+size > PGSIZE - KSTACKSIZE)
     return -1;
     
   *pp = (char*)(i + curproc->offset); // <--- Add curproc->offset here!

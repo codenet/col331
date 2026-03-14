@@ -210,7 +210,7 @@ fork(void)
   // 2. Copy the entire user memory segment
   // In p23's segmentation model, the physical memory starts at np->offset
   // and the size of the user space is curproc->sz
-  memmove(np->offset, curproc->offset, curproc->sz);
+  memmove(np->offset, curproc->offset, PGSIZE - KSTACKSIZE);
 
   // 3. Copy the trap frame so the child has the exact same register states
   *np->tf = *curproc->tf;

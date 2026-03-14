@@ -140,6 +140,7 @@ UPROGS=\
 	_echo\
 	_cat\
 	_ls\
+	_malloc_test\
 
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c

@@ -106,11 +106,13 @@ bootblock: bootasm.S bootmain.c
 	./sign.pl bootblock
 
 
-initcode: initcode.S
+initcode: initcode.S init.c usys.S user.h
 	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
+	$(CC) $(CFLAGS) -nostdinc -I. -c init.c
+	$(CC) $(CFLAGS) -nostdinc -I. -c usys.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o init.o usys.o
 	$(OBJCOPY) -S -O binary initcode.out initcode
-	$(OBJDUMP) -S initcode.o > initcode.asm
+	$(OBJDUMP) -S initcode.out > initcode.asm
 
 kernel: $(OBJS) entry.o kernel.ld initcode
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode

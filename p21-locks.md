@@ -58,9 +58,9 @@ Even though P2 "won the race" by writing to `l->qnext` first, it lost its buffer
 
 To avoid such unfortunate interleavings, we surround such *critical sections*
 with `acquire` and `release` of locks. Only one instruction-sequence should be
-able to acquire a lock at a time. Since there is no parallelism (only
-concurrency), `acquire` in `spinlock.c` just disables interrupts. `release`
-enables it.
+able to acquire a lock at a time. With this, runs on the critical sections
+become *mutually exclusive*. Since there is no parallelism (only concurrency),
+`acquire` in `spinlock.c` just disables interrupts, and `release` enables it.
 
 This branch adds lock acquires and releases around all the kernel data
 structures.

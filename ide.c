@@ -103,7 +103,6 @@ ideintr(void)
   struct buf *b;
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
-    release(&idelock);
     return;
   }
   idequeue = b->qnext;

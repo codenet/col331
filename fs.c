@@ -159,21 +159,20 @@ ialloc(uint dev, short type)
 void
 iput(struct inode *ip)
 {
-  acquire(&icache.lock); // (Protect the ref check)
+  acquire(&icache.lock);
   
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
     if(r == 1){
       // inode has no links and no other references: truncate and free.
-      
-      release(&icache.lock); // Drop lock before disk I/O!
+      release(&icache.lock);
       
       itrunc(ip);
       ip->type = 0;
       iupdate(ip);
       ip->valid = 0;
       
-      acquire(&icache.lock); // Re-acquire lock to safely decrement ref
+      acquire(&icache.lock);
     }
   }
   

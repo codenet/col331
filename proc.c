@@ -51,13 +51,13 @@ allocproc(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-  release(&ptable.lock); // (if no slots found)
+  release(&ptable.lock);
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  release(&ptable.lock); // (safe to release now that state is EMBRYO)
+  release(&ptable.lock);
 
   if((p->offset = kalloc()) == 0){
     p->state = UNUSED;
@@ -143,7 +143,7 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-    acquire(&ptable.lock); // (lock before scanning processes)
+    acquire(&ptable.lock);
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -156,7 +156,7 @@ scheduler(void)
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
     }
-    release(&ptable.lock); // (release when done scanning)
+    release(&ptable.lock);
   }
 }
 

@@ -101,9 +101,6 @@ void
 ideintr(void)
 {
   struct buf *b;
-
-  acquire(&idelock);
-
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
     release(&idelock);
@@ -121,8 +118,6 @@ ideintr(void)
   // Start disk on next buf in queue.
   if(idequeue != 0)
     idestart(idequeue);
-
-  release(&idelock);
 }
 
 // Sync buf with disk.

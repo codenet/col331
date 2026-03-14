@@ -34,7 +34,7 @@ exec(char *path, char **argv)
     cprintf("exec: fail\n");
     return -1;
   }
-  iread(ip);
+  ilock(ip);
 
   // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
@@ -59,7 +59,7 @@ exec(char *path, char **argv)
     if(readi(ip, (char*)(offset + ph.vaddr), ph.off, ph.filesz) != ph.filesz)
       goto bad;
   }
-  iput(ip);
+  iunlockput(ip);
   end_op();
   ip = 0;
 
@@ -101,7 +101,7 @@ exec(char *path, char **argv)
 
  bad:
   if(ip){
-    iput(ip);
+    iunlockput(ip);
     end_op();
   }
   return -1;

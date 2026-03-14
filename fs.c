@@ -15,10 +15,11 @@
 #include "stat.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
 #include "file.h"
-#include "spinlock.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
@@ -233,21 +234,22 @@ iget(uint dev, uint inum)
   ip->inum = inum;
   ip->ref = 1;
   ip->valid = 0;
-
+  initsleeplock(&ip->lock, "inode");
   release(&icache.lock);
 
   return ip;
 }
 
-// Reads the inode from disk if necessary.
 void
-iread(struct inode *ip)
+ilock(struct inode *ip)
 {
   struct buf *bp;
   struct dinode *dip;
 
   if(ip == 0 || ip->ref < 1)
-    panic("iread");
+    panic("ilock");
+
+  acquiresleep(&ip->lock); // <-- Lock the inode
 
   if(ip->valid == 0){
     bp = bread(ip->dev, IBLOCK(ip->inum, sb));
@@ -261,10 +263,26 @@ iread(struct inode *ip)
     brelse(bp);
     ip->valid = 1;
     if(ip->type == 0)
-      panic("iread: no type");
+      panic("ilock: no type");
   }
 }
 
+void
+iunlock(struct inode *ip)
+{
+  if(ip == 0 || !holdingsleep(&ip->lock) || ip->ref < 1)
+    panic("iunlock");
+
+  releasesleep(&ip->lock); // <-- Unlock the inode
+}
+
+// A handy helper function to unlock AND put the inode away
+void
+iunlockput(struct inode *ip)
+{
+  iunlock(ip);
+  iput(ip);
+}
 // Inode content
 //
 // The content (data) associated with each inode is stored
@@ -531,20 +549,20 @@ namex(char *path, int nameiparent, char *name)
   ip = iget(ROOTDEV, ROOTINO);
 
   while((path = skipelem(path, name)) != 0){
-    iread(ip);
+    ilock(ip);  // <-- Lock instead of iread
     if(ip->type != T_DIR){
-      iput(ip);
+      iunlockput(ip); // <-- Safe unlock and release
       return 0;
     }
     if(nameiparent && *path == '\0'){
-      // Stop one level early.
+      iunlock(ip); // <-- Safe unlock
       return ip;
     }
     if((next = dirlookup(ip, name, 0)) == 0){
-      iput(ip);
+      iunlockput(ip);
       return 0;
     }
-    iput(ip);
+    iunlockput(ip);
     ip = next;
   }
   if(nameiparent){

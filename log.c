@@ -1,9 +1,10 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
-#include "spinlock.h"
 
 // Simple logging that allows concurrent FS system calls.
 //
@@ -39,6 +40,7 @@ struct log {
   struct spinlock lock;
   int start;
   int size;
+  int outstanding; // ]how many FS sys calls are executing.
   int committing;  // in commit(), please wait.
   int dev;
   struct logheader lh;
@@ -124,7 +126,23 @@ recover_from_log(void)
 void
 begin_op(void)
 {
-  
+  acquire(&log.lock);
+  while(1){
+    if(log.committing){
+      release(&log.lock);
+      sleep(&log);
+      acquire(&log.lock);
+    } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
+      // this op might exhaust log space; wait for commit.
+      release(&log.lock);
+      sleep(&log);
+      acquire(&log.lock);
+    } else {
+      log.outstanding += 1;
+      release(&log.lock);
+      break;
+    }
+  }
 }
 
 // called at the end of each FS system call.
@@ -132,9 +150,32 @@ begin_op(void)
 void
 end_op(void)
 {
-  // call commit w/o holding locks, since not allowed
-  // to sleep with locks.
-  commit();
+  int do_commit = 0;
+
+  acquire(&log.lock);
+  log.outstanding -= 1;
+  if(log.committing)
+    panic("log.committing");
+  if(log.outstanding == 0){
+    do_commit = 1;
+    log.committing = 1;
+  } else {
+    // begin_op() might be waiting for log space
+    wakeup(&log);
+  }
+  release(&log.lock);
+
+  if(do_commit){
+    // call commit w/o holding locks, since not allowed
+    // to sleep with locks.
+    commit();
+    
+    // Commit is finished! Wake up anyone waiting in begin_op
+    acquire(&log.lock);
+    log.committing = 0;
+    wakeup(&log);
+    release(&log.lock);
+  }
 }
 
 // Copy modified blocks from cache to log.

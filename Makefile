@@ -9,6 +9,7 @@ OBJS = \
 	string.o\
 	proc.o\
 	spinlock.o\
+	sleeplock.o\
 	trapasm.o\
 	trap.o\
 	vectors.o\
@@ -23,6 +24,7 @@ OBJS = \
 	syscall.o\
 	sysfile.o\
 	exec.o\
+	
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

@@ -7,9 +7,11 @@
 #include "proc.h"
 #include "x86.h"
 #include "traps.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
-#include "spinlock.h"
+
 
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80
@@ -117,6 +119,7 @@ ideintr(void)
 
   b->flags |= B_VALID;
   b->flags &= ~B_DIRTY;
+  wakeup(b);
 
   // Start disk on next buf in queue.
   if(idequeue != 0)
@@ -149,14 +152,12 @@ iderw(struct buf *b)
   // Start disk if necessary.
   if(idequeue == b)
     idestart(b);
-  release(&idelock);
-
-  // Wait for request to finish.
-  while((b->flags & (B_VALID|B_DIRTY)) != B_VALID)
-  {
-    // Warning: If we do not call noop(), compiler generates code that does not
-    // read "b->flags" again and therefore never come out of this while loop. 
-    // "b->flags" is modified by the trap handler in ideintr().  
-    noop();
+  
+  while((b->flags & (B_VALID|B_DIRTY)) != B_VALID){
+    release(&idelock); // Must release before sleeping!
+    sleep(b); 
+    acquire(&idelock); // Must reacquire after waking!
   }
+
+  release(&idelock);
 }

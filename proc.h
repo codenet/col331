@@ -31,7 +31,7 @@ struct context {
   uint eip;
 };
 
-enum procstate { UNUSED, EMBRYO, RUNNABLE, RUNNING };
+enum procstate { UNUSED, EMBRYO, RUNNABLE, RUNNING, SLEEPING };
 
 // Per-process state
 struct proc {
@@ -43,6 +43,7 @@ struct proc {
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
+  void *chan;                  // If non-zero, sleeping on chan  
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)

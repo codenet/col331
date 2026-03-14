@@ -6,10 +6,11 @@
 #include "defs.h"
 #include "param.h"
 #include "x86.h"
+#include "spinlock.h"
 #include "traps.h"
 #include "fs.h"
 #include "file.h"
-#include "spinlock.h"
+
 
 static int panicked = 0;
 struct {

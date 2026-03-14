@@ -9,6 +9,8 @@
 #include "param.h"
 #include "stat.h"
 #include "mmu.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "proc.h"
 #include "fs.h"
 #include "file.h"
@@ -97,30 +99,29 @@ create(char *path, short type, short major, short minor)
 
   if((dp = nameiparent(path, name)) == 0)
     return 0;
-  iread(dp);
+  ilock(dp); // <-- Lock directory
 
   if((ip = dirlookup(dp, name, 0)) != 0){
-    iput(dp);
-    iread(ip);
+    iunlockput(dp);
+    ilock(ip); // <-- Lock target file
     if(type == T_FILE && ip->type == T_FILE)
       return ip;
-    iput(ip);
+    iunlockput(ip);
     return 0;
   }
 
   if((ip = ialloc(dp->dev, type)) == 0)
     panic("create: ialloc");
 
-  iread(ip);
+  ilock(ip); // <-- Lock new file
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
   iupdate(ip);
 
-  if(type == T_DIR){  // Create . and .. entries.
-    dp->nlink++;  // for ".."
+  if(type == T_DIR){  
+    dp->nlink++;  
     iupdate(dp);
-    // No ip->nlink++ for ".": avoid cyclic ref count.
     if(dirlink(ip, ".", ip->inum) < 0 || dirlink(ip, "..", dp->inum) < 0)
       panic("create dots");
   }
@@ -128,9 +129,9 @@ create(char *path, short type, short major, short minor)
   if(dirlink(dp, name, ip->inum) < 0)
     panic("create: dirlink");
 
-  iput(dp);
+  iunlockput(dp);
 
-  return ip;
+  return ip; // Returns with ip still locked!
 }
 
 int
@@ -141,9 +142,7 @@ sys_open(void)
   struct file *f;
   struct inode *ip;
 
-  if((argstr(0, &path) < 0) || (argint(1, &omode) < 0)) {
-    return -1;
-  }
+  if((argstr(0, &path) < 0) || (argint(1, &omode) < 0)) return -1;
 
   begin_op();
 
@@ -158,21 +157,22 @@ sys_open(void)
       end_op();
       return -1;
     }
-    iread(ip);
+    ilock(ip); // <-- Lock opened file
     if(ip->type == T_DIR && omode != O_RDONLY){
-      iput(ip);
+      iunlockput(ip);
       end_op();
       return -1;
     }
   }
 
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
-    if(f)
-      fileclose(f);
-    iput(ip);
+    if(f) fileclose(f);
+    iunlockput(ip);
     end_op();
     return -1;
   }
+  
+  iunlock(ip); // <-- Done setting up, safely unlock
   end_op();
 
   f->type = FD_INODE;

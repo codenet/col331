@@ -21,9 +21,11 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
-#include "spinlock.h"
+
 
 struct {
   struct spinlock lock;
@@ -46,6 +48,7 @@ binit(void)
   for(b = bcache.buf; b < bcache.buf+NBUF; b++){
     b->next = bcache.head.next;
     b->prev = &bcache.head;
+    initsleeplock(&b->lock, "buffer");
     bcache.head.next->prev = b;
     bcache.head.next = b;
   }
@@ -65,13 +68,24 @@ bget(uint dev, uint blockno)
     if(b->dev == dev && b->blockno == blockno){
       b->refcnt++;
       release(&bcache.lock);
+      acquiresleep(&b->lock);
+      
+      // THE FIX: We slept. Did someone steal and rename this block
+      // while we were waiting for the lock?
+      if(b->dev != dev || b->blockno != blockno){
+         // Yes! It was stolen. Drop the lock and start over.
+         releasesleep(&b->lock);
+         acquire(&bcache.lock);
+         b->refcnt--;
+         release(&bcache.lock);
+         return bget(dev, blockno); 
+      }
+      
       return b;
     }
   }
 
   // Not cached; recycle an unused buffer.
-  // Even if refcnt==0, B_DIRTY indicates a buffer is in use
-  // because log.c has modified it but not yet committed it.
   for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
     if(b->refcnt == 0 && (b->flags & B_DIRTY) == 0) {
       b->dev = dev;
@@ -79,12 +93,12 @@ bget(uint dev, uint blockno)
       b->flags = 0;
       b->refcnt = 1;
       release(&bcache.lock);
+      acquiresleep(&b->lock);
       return b;
     }
   }
   panic("bget: no buffers");
 }
-
 // Return a locked buf with the contents of the indicated block.
 struct buf*
 bread(uint dev, uint blockno)
@@ -112,6 +126,10 @@ bwrite(struct buf *b)
 void
 brelse(struct buf *b)
 {
+  if(!holdingsleep(&b->lock))
+    panic("brelse");
+
+  releasesleep(&b->lock);
   acquire(&bcache.lock);
   b->refcnt--;
   if (b->refcnt == 0) {

@@ -127,7 +127,7 @@ vectors.S: vectors.pl
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
-ULIB = usys.o printf.o ulib.o unmalloc.o
+ULIB = usys.o printf.o ulib.o umalloc.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -140,7 +140,6 @@ UPROGS=\
 	_echo\
 	_cat\
 	_ls\
-	_malloc_test\
 
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c

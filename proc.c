@@ -60,14 +60,18 @@ found:
   release(&ptable.lock); // (safe to release now that state is EMBRYO)
 
   if((p->offset = kalloc()) == 0){
+    acquire(&ptable.lock);
     p->state = UNUSED;
+    release(&ptable.lock);
     return 0;
   }
   p->sz = PGSIZE;
 
   // kstack lives on a different segment
   if((p->kstack = kalloc()) == 0){
+    acquire(&ptable.lock);
     p->state = UNUSED;
+    release(&ptable.lock);
     return 0;
   }
 

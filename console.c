@@ -145,7 +145,8 @@ void
 consoleintr(int (*getc)(void))
 {
   int c, doprocdump=0;
-
+  
+  acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
     case C('P'):  // Process listing.
@@ -178,6 +179,8 @@ consoleintr(int (*getc)(void))
       break;
     }
   }
+  release(&cons.lock);
+
   if(doprocdump) {
     procdump();
   }
@@ -191,6 +194,7 @@ consoleread(struct inode *ip, char *dst, int n)
   int c;
 
   target = n;
+  acquire(&cons.lock);
   while(n > 0){
     while(input.r == input.w);
     c = input.buf[input.r++ % INPUT_BUF];
@@ -207,7 +211,7 @@ consoleread(struct inode *ip, char *dst, int n)
     if(c == '\n')
       break;
   }
-
+  release(&cons.lock);
   return target - n;
 }
 
@@ -215,8 +219,10 @@ int
 consolewrite(struct inode *ip, char *buf, int n)
 {
   int i;
+  acquire(&cons.lock);
   for(i = 0; i < n; i++)
     consputc(buf[i] & 0xff);
+  release(&cons.lock);
   return n;
 }
 

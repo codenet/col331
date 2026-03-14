@@ -88,12 +88,14 @@ extern int sys_close(void);
 extern int sys_open(void);
 extern int sys_write(void);
 extern int sys_exec(void);
+extern int sys_uptime(void);
 
 static int (*syscalls[])(void) = {
 [SYS_open]    sys_open,
 [SYS_write]   sys_write,
 [SYS_close]   sys_close,
 [SYS_exec]    sys_exec,
+[SYS_uptime]  sys_uptime,
 };
 
 void

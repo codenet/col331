@@ -3,3 +3,4 @@
 #define SYS_write   2
 #define SYS_close   3
 #define SYS_exec    4
+#define SYS_uptime  5

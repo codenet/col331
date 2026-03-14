@@ -3,6 +3,7 @@ int write(int, const void*, int);
 int close(int);
 int open(const char*, int);
 int exec(char*,char**);
+int uptime(void);
 
 // ulib.c
 void printf(int, const char*, ...);

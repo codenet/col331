@@ -30,7 +30,6 @@ getcallerpcs(void *v, uint pcs[])
 // Pushcli/popcli are like cli/sti except that they are matched:
 // it takes two popcli to undo two pushcli.  Also, if interrupts
 // are off, then pushcli, popcli leaves them off.
-
 void
 pushcli(void)
 {
@@ -68,7 +67,7 @@ initlock(struct spinlock *lk, char *name)
 void
 acquire(struct spinlock *lk)
 {
-  pushcli(); // disable interrupts to avoid race conditions
+  pushcli();
   lk->locked = 1;
 }
 
@@ -77,5 +76,5 @@ void
 release(struct spinlock *lk)
 {
   lk->locked = 0;
-  popcli();  // re-enable interrupts if appropriate
+  popcli();
 }

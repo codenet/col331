@@ -145,7 +145,7 @@ void
 consoleintr(int (*getc)(void))
 {
   int c, doprocdump=0;
-  
+
   acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
@@ -194,7 +194,6 @@ consoleread(struct inode *ip, char *dst, int n)
   int c;
 
   target = n;
-  acquire(&cons.lock);
   while(n > 0){
     while(input.r == input.w);
     c = input.buf[input.r++ % INPUT_BUF];
@@ -211,7 +210,7 @@ consoleread(struct inode *ip, char *dst, int n)
     if(c == '\n')
       break;
   }
-  release(&cons.lock);
+
   return target - n;
 }
 

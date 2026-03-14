@@ -25,9 +25,12 @@ int nextpid = 1;
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+// In proc.c 
+
 int
 cpuid() {
-  return 0;
+  // FIXED: Return the actual hardware APIC ID instead of hardcoding 0
+  return lapicid();
 }
 
 // Must be called with interrupts disabled to avoid the caller being
@@ -35,14 +38,42 @@ cpuid() {
 struct cpu*
 mycpu(void)
 {
-  return &cpus[0];
+  int apicid, i;
+  
+  if(readeflags()&FL_IF)
+    panic("mycpu called with interrupts enabled\n");
+  
+  apicid = lapicid();
+  
+  // FIXED: If ncpu is 0, mpinit() hasn't run yet. 
+  // We must be in early boot on the primary CPU.
+  if (ncpu == 0) {
+      return &cpus[0];
+  }
+  
+  // Loop through the CPUs array to find the one matching the hardware APIC ID
+  for (i = 0; i < ncpu; ++i) {
+    if (cpus[i].apicid == apicid)
+      return &cpus[i];
+  }
+  
+  panic("unknown apicid\n");
 }
 
 // Read proc from the cpu structure
 struct proc*
 myproc(void) {
-  struct cpu *c = mycpu();
-  return c->proc;
+  struct cpu *c;
+  struct proc *p;
+  
+  pushcli(); // FIXED: Disable interrupts safely
+  
+  c = mycpu();
+  p = c->proc;
+  
+  popcli();  // FIXED: Restore interrupts to their previous state
+  
+  return p;
 }
 
 // Look in the process table for an UNUSED proc.
@@ -71,9 +102,17 @@ found:
     p->state = UNUSED;
     return 0;
   }
-  p->sz = PGSIZE - KSTACKSIZE;
+  
+  p->sz = PGSIZE;
 
-  sp = (char*)(p->offset + PGSIZE);
+  // kstack lives on a different segment
+  if((p->kstack = kalloc()) == 0){
+    p->state = UNUSED;
+    return 0;
+  }
+
+  sp = (char*)(p->kstack + PGSIZE);
+  // --------------------------------------
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;
@@ -119,7 +158,10 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE - KSTACKSIZE;
+  
+  p->tf->esp = PGSIZE;
+  // --------------------------------------
+  
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -134,12 +176,18 @@ pinit(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+// process scheduler.
 void
 scheduler(void)
 {
   struct proc *p;
-  struct cpu *c = mycpu();
+  struct cpu *c;
+
+  // FIXED: Safely get the current CPU by temporarily disabling interrupts
+  pushcli();
+  c = mycpu();
   c->proc = 0;
+  popcli();
   
   for(;;){
     // Enable interrupts on this processor.
@@ -317,15 +365,15 @@ wait(void)
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
-        // p->killed = 0; // Uncomment if your struct proc has a killed field
+        p->killed = 0; // FIXED: Reset the killed state for the next process to use this slot
         p->state = UNUSED;
         release(&ptable.lock);
         return pid;
       }
     }
 
-    // No point waiting if we don't have any children.
-    if(!havekids){ // Add `|| curproc->killed` if your proc.h has a killed field
+    // FIXED: Prevent an infinitely hanging wait() if the parent process is killed
+    if(!havekids || curproc->killed){ 
       release(&ptable.lock);
       return -1;
     }

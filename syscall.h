@@ -15,3 +15,4 @@
 #define SYS_chdir  14
 #define SYS_pipe   15
 #define SYS_mknod  16
+#define SYS_sbrk   17

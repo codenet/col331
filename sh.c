@@ -43,15 +43,20 @@ void runcmd(char **argv, int argc) {
 }
 
 int main(void) {
-  static char buf[128];
+  char *buf;
   int fd;
 
+  buf = malloc(128);
+  if(buf == 0){
+    printf(2, "malloc failed\n");
+    exit();
+  }
   // Ensure 0, 1, 2 are allocated to the console
   while((fd = open("console", O_RDWR)) >= 0) {
     if(fd >= 3) { close(fd); break; }
   }
 
-  while(getcmd(buf, sizeof(buf)) >= 0) {
+  while(getcmd(buf, 128) >= 0) {
     if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ') {
       buf[strlen(buf)-1] = 0; 
       if(chdir(buf+3) < 0) printf(2, "cannot cd %s\n", buf+3);
@@ -120,5 +125,6 @@ int main(void) {
     }
     wait();
   }
+  free(buf);
   exit();
 }

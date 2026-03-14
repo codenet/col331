@@ -23,6 +23,7 @@ OBJS = \
 	kalloc.o\
 	syscall.o\
 	sysfile.o\
+	sysproc.o\
 	exec.o\
 	pipe.o
 	
@@ -126,7 +127,7 @@ vectors.S: vectors.pl
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
-ULIB = usys.o printf.o ulib.o
+ULIB = usys.o printf.o ulib.o unmalloc.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^

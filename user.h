@@ -33,3 +33,7 @@ char* strcpy(char*, const char*);
 
 int pipe(int*);
 int dup(int);
+
+char* sbrk(int);
+void* malloc(uint);
+void free(void*);

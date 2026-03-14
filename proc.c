@@ -453,6 +453,24 @@ sleep(void *chan, struct spinlock *lk)
   }
 }
 
+int
+growproc(int n)
+{
+  struct proc *p = myproc();
+  int newsz;
+
+  newsz = (int)p->sz + n;
+  if(newsz < 0)
+    return -1;
+  if(newsz >= PGSIZE - KSTACKSIZE)
+    return -1;
+
+  if(n > 0)
+    memset(p->offset + p->sz, 0, n);
+
+  p->sz = newsz;
+  return 0;
+}
 
 void
 procdump(void)

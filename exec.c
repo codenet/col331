@@ -11,21 +11,23 @@ int
 exec(char *path, char **argv)
 {
   int i, off;
-  uint argc, sp, ustack[3+MAXARG+1];
+  uint argc, sp, sz, ustack[3+MAXARG+1];
   struct elfhdr elf;
   struct inode *ip;
   struct proc *curproc = myproc();
   struct proghdr ph;
-  
-  // Use a flat buffer to save kernel stack space! (No more stack overflows)
+
   char argbuf[512];
   int arg_offsets[MAXARG];
   int argbuf_idx = 0;
-  
+
   for(argc = 0; argv[argc]; argc++) {
-    if(argc >= MAXARG) return -1;
-    int len = strlen(argv[argc]) + 1;
-    if(argbuf_idx + len > sizeof(argbuf)) return -1;
+    int len;
+    if(argc >= MAXARG)
+      return -1;
+    len = strlen(argv[argc]) + 1;
+    if(argbuf_idx + len > sizeof(argbuf))
+      return -1;
     memmove(argbuf + argbuf_idx, argv[argc], len);
     arg_offsets[argc] = argbuf_idx;
     argbuf_idx += len;
@@ -39,17 +41,15 @@ exec(char *path, char **argv)
   }
   ilock(ip);
 
-  // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
     goto bad;
   if(elf.magic != ELF_MAGIC)
     goto bad;
 
-  // Wipe old process memory to give the new program a clean slate
-  memset((void*)curproc->offset, 1, curproc->sz);
+  memset((void*)curproc->offset, 0, PGSIZE - KSTACKSIZE);
 
-  // Load program into memory
-  for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
+  sz = 0;
+  for(i = 0, off = elf.phoff; i < elf.phnum; i++, off += sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
     if(ph.type != ELF_PROG_LOAD)
@@ -60,52 +60,65 @@ exec(char *path, char **argv)
       goto bad;
     if(ph.vaddr % PGSIZE != 0)
       goto bad;
+    if(ph.vaddr + ph.memsz > PGSIZE - KSTACKSIZE)
+      goto bad;
+
     if(readi(ip, (char*)(curproc->offset + ph.vaddr), ph.off, ph.filesz) != ph.filesz)
       goto bad;
+    if(ph.memsz > ph.filesz)
+      memset((void*)(curproc->offset + ph.vaddr + ph.filesz), 0,
+             ph.memsz - ph.filesz);
+
+    if(ph.vaddr + ph.memsz > sz)
+      sz = ph.vaddr + ph.memsz;
   }
+
   iunlockput(ip);
   end_op();
   ip = 0;
 
-  // Set up the user stack
-  sp = curproc->sz;
-  
-  // Push the actual argument strings onto the stack
+  curproc->sz = sz;
+  sp = PGSIZE - KSTACKSIZE;
+
   for(i = argc - 1; i >= 0; i--) {
     char *arg_str = argbuf + arg_offsets[i];
     sp -= strlen(arg_str) + 1;
-    sp &= ~3; // Align to word boundary for x86
+    sp &= ~3;
+    if(sp < curproc->sz)
+      goto bad;
     memmove((void*)(curproc->offset + sp), arg_str, strlen(arg_str) + 1);
-    ustack[3+i] = sp; 
+    ustack[3+i] = sp;
   }
-  ustack[3+argc] = 0; // null-terminate the argv array
+  ustack[3+argc] = 0;
 
-  // Push the argv pointer array, argc, and the fake return PC
-  ustack[0] = 0xffffffff; // Fake return PC
+  ustack[0] = 0xffffffff;
   ustack[1] = argc;
-  ustack[2] = sp - (argc + 1) * 4; // Memory address where the argv array will sit
+  ustack[2] = sp - (argc + 1) * 4;
 
-  // Push argv pointers array
   sp -= (argc + 1) * 4;
-  memmove((void*)(curproc->offset + sp), ustack + 3, (argc + 1) * 4); 
-  
-  // Push the Fake PC, argc, and argv pointer
-  sp -= 12; 
-  memmove((void*)(curproc->offset + sp), ustack, 12); 
+  if(sp < curproc->sz)
+    goto bad;
+  memmove((void*)(curproc->offset + sp), ustack + 3, (argc + 1) * 4);
 
-  curproc->tf->eip = elf.entry;  // Start exactly at 'main'
-  curproc->tf->esp = sp;         // Set the stack pointer
-  
-  // Update the process name for debugging
-  char *last, *s;
-  for(last=s=path; *s; s++)
-    if(*s == '/')
-      last = s+1;
-  safestrcpy(curproc->name, last, sizeof(curproc->name));
-  
+  sp -= 12;
+  if(sp < curproc->sz)
+    goto bad;
+  memmove((void*)(curproc->offset + sp), ustack, 12);
+
+  curproc->tf->eip = elf.entry;
+  curproc->tf->esp = sp;
+
+  {
+    char *last, *s;
+    for(last = s = path; *s; s++)
+      if(*s == '/')
+        last = s + 1;
+    safestrcpy(curproc->name, last, sizeof(curproc->name));
+  }
+
   return 0;
 
- bad:
+bad:
   if(ip){
     iunlockput(ip);
     end_op();

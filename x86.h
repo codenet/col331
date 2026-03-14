@@ -132,6 +132,16 @@ noop(void)
   asm volatile("nop");
 }
 
+static inline uint 
+ebp(void)
+{
+    uint ebp;
+    asm volatile ("movl %%ebp, %0"
+                  : "=r"(ebp)
+                  :: "memory");
+    return ebp;
+}
+
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {

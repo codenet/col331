@@ -13,7 +13,6 @@
 #include "proc.h"
 #include "memlayout.h"
 
-
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -70,9 +69,18 @@ found:
     p->state = UNUSED;
     return 0;
   }
-  p->sz = PGSIZE - KSTACKSIZE;
+  
+  // ---> INCOMING CHANGE ADOPTED HERE <---
+  p->sz = PGSIZE;
 
-  sp = (char*)(p->offset + PGSIZE);
+  // kstack lives on a different segment
+  if((p->kstack = kalloc()) == 0){
+    p->state = UNUSED;
+    return 0;
+  }
+
+  sp = (char*)(p->kstack + PGSIZE);
+  // --------------------------------------
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;
@@ -118,7 +126,11 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE - KSTACKSIZE;
+  
+  // ---> INCOMING CHANGE ADOPTED HERE <---
+  p->tf->esp = PGSIZE;
+  // --------------------------------------
+  
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -194,7 +206,7 @@ yield(void)
   release(&ptable.lock);
 }
 
-
+// ---> HEAD VERSION KEPT HERE <---
 void
 forkret(void)
 {
@@ -269,9 +281,7 @@ sleep(void *chan)
   p->chan = 0;
   release(&ptable.lock);
 }
-
-
-
+// --------------------------------
 
 void
 procdump(void)

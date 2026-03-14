@@ -24,6 +24,7 @@ OBJS = \
 	syscall.o\
 	sysfile.o\
 	exec.o\
+	pipe.o
 	
 
 # Cross-compiling (e.g., on Mac OS X)

@@ -41,13 +41,14 @@ filealloc(void)
 }
 
 // Increment ref count for file f.
+// Increment ref count for file f.
 struct file*
 filedup(struct file *f)
 {
   acquire(&ftable.lock);
   if(f->ref < 1)
     panic("filedup");
-  f->ref++;
+  f->ref++; // Just increment the ref count!
   release(&ftable.lock);
   return f;
 }
@@ -70,17 +71,21 @@ fileclose(struct file *f)
   f->type = FD_NONE;
   release(&ftable.lock);
 
-  if(ff.type == FD_INODE){
+  // Close the underlying resource depending on its type!
+  if(ff.type == FD_PIPE){
+    pipeclose(ff.pipe, ff.writable);
+  } else if(ff.type == FD_INODE){
     begin_op();
     iput(ff.ip);
     end_op();
   }
 }
-
 // Get metadata about file f.
 int
 filestat(struct file *f, struct stat *st)
 {
+  if(f->type == FD_PIPE)
+    return -1;
   if(f->type == FD_INODE){
     ilock(f->ip); // <-- Lock instead of iread
     stati(f->ip, st);
@@ -98,6 +103,8 @@ fileread(struct file *f, char *addr, int n)
 
   if(f->readable == 0)
     return -1;
+  if(f->type == FD_PIPE)
+    return piperead(f->pipe, addr, n);
   if(f->type == FD_INODE){
     ilock(f->ip); // <-- Lock instead of iread
     if((r = readi(f->ip, addr, f->off, n)) > 0)
@@ -116,6 +123,8 @@ filewrite(struct file *f, char *addr, int n)
 
   if(f->writable == 0)
     return -1;
+  if(f->type == FD_PIPE)
+    return pipewrite(f->pipe, addr, n);
   if(f->type == FD_INODE){
     // write a few blocks at a time
     int max = ((MAXOPBLOCKS-1-1-2) / 2) * 512;

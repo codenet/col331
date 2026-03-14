@@ -1,33 +1,23 @@
 #include "types.h"
-#include "stat.h"
 #include "user.h"
 #include "fcntl.h"
 
-char *argv[] = { "sh", 0 };
-
 int main(void) {
-  int pid, wpid;
+  int p[2];
+  char buf[32];
 
-  if(open("console", O_RDWR) < 0){
-    mknod("console", 1, 1);
-    open("console", O_RDWR);
-  }
-  dup(0);  // stdout
-  dup(0);  // stderr
+  open("console", O_RDWR); // 0
+  open("console", O_RDWR); // 1
+  open("console", O_RDWR); // 2
 
-  for(;;){
-    printf(1, "init: starting sh\n");
-    pid = fork();
-    if(pid < 0){
-      printf(1, "init: fork failed\n");
-      for(;;);
-    }
-    if(pid == 0){
-      exec("sh", argv);
-      printf(1, "init: exec sh failed\n");
-      exit();
-    }
-    while((wpid=wait()) >= 0 && wpid != pid)
-      printf(1, "zombie!\n");
+  pipe(p);
+  if(fork() == 0) {
+    write(p[1], "Pipes are working!\n", 19);
+    exit();
+  } else {
+    wait();
+    read(p[0], buf, 19);
+    write(1, buf, 19);
   }
+  for(;;);
 }

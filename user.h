@@ -30,3 +30,5 @@ void* memmove(void*, const void*, uint);
 char* strchr(const char*, char);
 int strcmp(const char*, const char*);
 char* strcpy(char*, const char*);
+
+int pipe(int*);

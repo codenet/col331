@@ -7,6 +7,8 @@ struct context;
 struct proc;
 struct spinlock;
 struct sleeplock;
+struct pipe;
+struct file;
 
 // bio.c
 void            binit(void);
@@ -38,6 +40,12 @@ struct file*    open(char* path, int omode);
 int             unlink(char* path, char* name);
 int             isdirempty(struct inode *dp);
 int             mknod(struct inode *ip, char* path, int major, int minor);
+
+// pipe.c
+int             pipealloc(struct file**, struct file**);
+void            pipeclose(struct pipe*, int);
+int             piperead(struct pipe*, char*, int);
+int             pipewrite(struct pipe*, char*, int);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);

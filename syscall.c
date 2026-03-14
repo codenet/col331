@@ -103,6 +103,8 @@ extern int sys_chdir(void);
 extern int sys_pipe(void);
 extern int sys_mknod(void);
 
+extern int sys_pipe(void);
+
 static int (*syscalls[])(void) = {
 [SYS_open]    sys_open,
 [SYS_write]   sys_write,
@@ -120,6 +122,7 @@ static int (*syscalls[])(void) = {
 [SYS_chdir]   sys_chdir,
 [SYS_pipe]    sys_pipe,
 [SYS_mknod]   sys_mknod,
+[SYS_pipe] sys_pipe,
 };
 
 void

@@ -91,6 +91,30 @@ sys_close(void)
   return 0;
 }
 
+int
+sys_pipe(void)
+{
+  int *fd;
+  struct file *rf, *wf;
+  int fd0, fd1;
+
+  if(argptr(0, (void*)&fd, 2*sizeof(fd[0])) < 0)
+    return -1;
+  if(pipealloc(&rf, &wf) < 0)
+    return -1;
+  fd0 = -1;
+  if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0){
+    if(fd0 >= 0)
+      myproc()->ofile[fd0] = 0;
+    fileclose(rf);
+    fileclose(wf);
+    return -1;
+  }
+  fd[0] = fd0;
+  fd[1] = fd1;
+  return 0;
+}
+
 static struct inode*
 create(char *path, short type, short major, short minor)
 {
@@ -253,9 +277,6 @@ int sys_chdir(void) {
   return 0;
 }
 
-int sys_pipe(void) {
-  return -1; // Dummy return for p25. Pipes are added in p26!
-}
 
 int sys_mknod(void) {
   struct inode *ip;

@@ -102,10 +102,6 @@ void            yield(void);
 void             forkret(void);
 
 // spinlock.c
-void            getcallerpcs(void*, uint*);
-void            pushcli(void);
-void            popcli(void);
-
 struct spinlock; 
 void            getcallerpcs(void*, uint*);
 void            pushcli(void);
@@ -138,6 +134,7 @@ void            syscall(void);
 void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
+extern struct spinlock tickslock;
 
 // uart.c
 void            uartinit(void);

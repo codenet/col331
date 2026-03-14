@@ -2,28 +2,44 @@
 #include "user.h"
 #include "fcntl.h"
 
-#define MAXMEM 8192
-char sh_memory[MAXMEM];
-int sh_mem_idx = 0;
-
-void* malloc(uint size) {
-  char *p = &sh_memory[sh_mem_idx];
-  sh_mem_idx += ((size + 3) & ~3); // word align
-  if (sh_mem_idx > MAXMEM) {
-    printf(2, "sh: out of memory\n");
-    exit();
-  }
-  return (void*)p;
-}
-
-void free(void *p) { /* Not implemented in static allocator */ }
-
 int getcmd(char *buf, int nbuf) {
   printf(2, "$ ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if(buf[0] == 0) return -1;
   return 0;
+}
+
+// Helper function to handle redirection and execution
+void runcmd(char **argv, int argc) {
+  char *redir_in = 0;
+  char *redir_out = 0;
+  char *exec_argv[20];
+  int exec_argc = 0;
+
+  for(int i = 0; i < argc; i++) {
+    if(strcmp(argv[i], "<") == 0 && i + 1 < argc) {
+      redir_in = argv[++i];
+    } else if(strcmp(argv[i], ">") == 0 && i + 1 < argc) {
+      redir_out = argv[++i];
+    } else {
+      exec_argv[exec_argc++] = argv[i];
+    }
+  }
+  exec_argv[exec_argc] = 0;
+
+  if(redir_in) {
+    close(0);
+    if(open(redir_in, O_RDONLY) < 0) { printf(2, "cannot open %s\n", redir_in); exit(); }
+  }
+  if(redir_out) {
+    close(1);
+    if(open(redir_out, O_WRONLY|O_CREATE) < 0) { printf(2, "cannot create %s\n", redir_out); exit(); }
+  }
+
+  exec(exec_argv[0], exec_argv);
+  printf(2, "exec %s failed\n", exec_argv[0]);
+  exit();
 }
 
 int main(void) {
@@ -51,51 +67,56 @@ int main(void) {
       int len = strlen(buf);
       if(len > 0 && buf[len-1] == '\n') buf[len-1] = 0;
       
-      // 2. Tokenize the string in-place by turning spaces into null-terminators
+      // 2. Tokenize the string
       while(*p) {
-        while(*p == ' ' || *p == '\t') *p++ = 0; // Skip leading spaces
+        while(*p == ' ' || *p == '\t') *p++ = 0;
         if(*p == 0) break;
         
-        argv[argc++] = p; // Record the start of the word
-        while(*p && *p != ' ' && *p != '\t') p++; // Skip to the end of the word
+        argv[argc++] = p;
+        while(*p && *p != ' ' && *p != '\t') p++;
       }
       argv[argc] = 0;
 
       if(argc == 0) exit();
 
-      // 3. Check for I/O Redirection (expects spaces, e.g., "echo a > b")
-      char *redir_in = 0;
-      char *redir_out = 0;
-      char *exec_argv[20];
-      int exec_argc = 0;
-
+      // 3. Check for Pipe character '|'
+      int pipe_idx = -1;
       for(int i = 0; i < argc; i++) {
-        if(strcmp(argv[i], "<") == 0 && i + 1 < argc) {
-          redir_in = argv[++i];
-        } else if(strcmp(argv[i], ">") == 0 && i + 1 < argc) {
-          redir_out = argv[++i];
-        } else {
-          exec_argv[exec_argc++] = argv[i];
+        if(strcmp(argv[i], "|") == 0) {
+          pipe_idx = i;
+          break;
         }
       }
-      exec_argv[exec_argc] = 0;
 
-      // Apply redirections
-      if(redir_in) {
-        close(0);
-        if(open(redir_in, O_RDONLY) < 0) { printf(2, "cannot open %s\n", redir_in); exit(); }
+      if(pipe_idx != -1) {
+        int p[2];
+        pipe(p); // Create the kernel pipe!
+        
+        if(fork() == 0) {
+          // Left side of the pipe
+          close(1);   // Close standard output
+          dup(p[1]);  // Wire standard output to the pipe's write end
+          close(p[0]);
+          close(p[1]);
+          runcmd(argv, pipe_idx);
+        }
+        if(fork() == 0) {
+          // Right side of the pipe
+          close(0);   // Close standard input
+          dup(p[0]);  // Wire standard input to the pipe's read end
+          close(p[0]);
+          close(p[1]);
+          runcmd(&argv[pipe_idx + 1], argc - pipe_idx - 1);
+        }
+        close(p[0]);
+        close(p[1]);
+        wait();
+        wait();
+        exit();
+      } else {
+        // No pipe, run normally
+        runcmd(argv, argc);
       }
-      if(redir_out) {
-        close(1);
-        if(open(redir_out, O_WRONLY|O_CREATE) < 0) { printf(2, "cannot create %s\n", redir_out); exit(); }
-      }
-
-      // Execute the isolated command
-      exec(exec_argv[0], exec_argv);
-      
-      // If exec returns, it failed
-      printf(2, "exec %s failed\n", exec_argv[0]);
-      exit();
     }
     wait();
   }

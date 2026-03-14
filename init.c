@@ -3,21 +3,31 @@
 #include "fcntl.h"
 
 int main(void) {
-  int p[2];
-  char buf[32];
+  int pid, wpid;
 
-  open("console", O_RDWR); // 0
-  open("console", O_RDWR); // 1
-  open("console", O_RDWR); // 2
-
-  pipe(p);
-  if(fork() == 0) {
-    write(p[1], "Pipes are working!\n", 19);
-    exit();
-  } else {
-    wait();
-    read(p[0], buf, 19);
-    write(1, buf, 19);
+  if(open("console", O_RDWR) < 0){
+    mknod("console", 1, 1);
+    open("console", O_RDWR);
   }
-  for(;;);
+  open("console", O_RDWR);
+  open("console", O_RDWR);
+
+  printf(1, "init: starting sh\n");
+
+  for(;;){
+    pid = fork();
+    if(pid < 0){
+      printf(1, "init: fork failed\n");
+      exit();
+    }
+    if(pid == 0){
+      char *argv[] = { "sh", 0 };
+      exec("sh", argv);
+      printf(1, "init: exec sh failed\n");
+      exit();
+    }
+    // Wait for the shell to exit, then respawn it!
+    while((wpid=wait()) >= 0 && wpid != pid)
+      printf(1, "zombie!\n");
+  }
 }

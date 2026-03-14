@@ -174,6 +174,7 @@ consoleintr(int (*getc)(void))
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
           // call myproc with the buf
           input.w = input.e;
+          wakeup(&input.r);
         }
       }
       break;
@@ -191,14 +192,17 @@ consoleread(struct inode *ip, char *dst, int n)
   uint target;
   int c;
 
+  iunlock(ip); // Unlock so other processes can write to the screen!
+
   target = n;
+  acquire(&cons.lock);
   while(n > 0){
-    while(input.r == input.w);
+    while(input.r == input.w){
+      sleep(&input.r, &cons.lock); // Go to sleep until Enter is pressed
+    }
     c = input.buf[input.r++ % INPUT_BUF];
     if(c == C('D')){  // EOF
       if(n < target){
-        // Save ^D for next time, to make sure
-        // caller gets a 0-byte result.
         input.r--;
       }
       break;
@@ -208,7 +212,9 @@ consoleread(struct inode *ip, char *dst, int n)
     if(c == '\n')
       break;
   }
+  release(&cons.lock);
 
+  ilock(ip); // Re-lock before returning to readi
   return target - n;
 }
 

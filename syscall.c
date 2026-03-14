@@ -66,7 +66,8 @@ argptr(int n, char **pp, int size)
     return -1;
   if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
     return -1;
-  *pp = (char*)i;
+    
+  *pp = (char*)(i + curproc->offset); // <--- Add curproc->offset here!
   return 0;
 }
 
@@ -94,6 +95,14 @@ extern int sys_exit(void);
 extern int sys_getpid(void);
 extern int sys_kill(void);  
 
+extern int sys_read(void);
+extern int sys_dup(void);
+extern int sys_fstat(void);
+extern int sys_stat(void);
+extern int sys_chdir(void);
+extern int sys_pipe(void);
+extern int sys_mknod(void);
+
 static int (*syscalls[])(void) = {
 [SYS_open]    sys_open,
 [SYS_write]   sys_write,
@@ -103,7 +112,14 @@ static int (*syscalls[])(void) = {
 [SYS_wait]    sys_wait,
 [SYS_exit]    sys_exit,
 [SYS_getpid]  sys_getpid,
-[SYS_kill]    sys_kill,     
+[SYS_kill]    sys_kill,
+[SYS_read]    sys_read,
+[SYS_dup]     sys_dup,
+[SYS_fstat]   sys_fstat,
+[SYS_stat]    sys_stat,
+[SYS_chdir]   sys_chdir,
+[SYS_pipe]    sys_pipe,
+[SYS_mknod]   sys_mknod,
 };
 
 void

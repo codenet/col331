@@ -34,6 +34,6 @@ main(void)
   // mknod(&console, "console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
-  pinit();         // another process
+  // pinit();         // another process
   scheduler();     // start running processes
 }

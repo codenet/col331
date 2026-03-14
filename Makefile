@@ -125,7 +125,7 @@ vectors.S: vectors.pl
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
-ULIB = usys.o printf.o
+ULIB = usys.o printf.o ulib.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -133,7 +133,11 @@ _%: %.o $(ULIB)
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 UPROGS=\
-	_init
+	_init\
+	_sh\
+	_echo\
+	_cat\
+	_ls\
 
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c

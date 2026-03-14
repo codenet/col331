@@ -72,7 +72,7 @@ sys_write(void)
   int n;
   char *p;
 
-  if((argfd(0, 0, &f) < 0) || (argstr(1, &p)) < 0 || (argint(2, &n)) < 0) {
+  if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0) {
     return -1;
   }
   return filewrite(f, p, n);
@@ -186,9 +186,95 @@ sys_open(void)
 int
 sys_exec(void)
 {
-  char *path;
-  if(argstr(0, &path) < 0){
+  char *path, *argv[MAXARG];
+  int i;
+  uint uargv, uarg;
+
+  if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
     return -1;
   }
-  return exec(path);
+  
+  memset(argv, 0, sizeof(argv));
+  for(i=0;; i++){
+    if(i >= NELEM(argv)) return -1;
+    if(fetchint(uargv+4*i, (int*)&uarg) < 0) return -1;
+    if(uarg == 0){
+      argv[i] = 0;
+      break;
+    }
+    if(fetchstr(uarg, &argv[i]) < 0) return -1;
+  }
+  
+  return exec(path, argv);
+}
+
+int sys_dup(void) {
+  struct file *f;
+  int fd;
+  if(argfd(0, 0, &f) < 0) return -1;
+  if((fd = fdalloc(f)) < 0) return -1;
+  filedup(f);
+  return fd;
+}
+
+int sys_fstat(void) {
+  struct file *f;
+  struct stat *st;
+  if(argfd(0, 0, &f) < 0 || argptr(1, (void*)&st, sizeof(*st)) < 0) return -1;
+  return filestat(f, st);
+}
+
+int sys_stat(void) {
+  struct inode *ip;
+  struct stat *st;
+  char *path;
+  if(argstr(0, &path) < 0 || argptr(1, (void*)&st, sizeof(*st)) < 0) return -1;
+  begin_op();
+  if((ip = namei(path)) == 0){ end_op(); return -1; }
+  ilock(ip);
+  stati(ip, st);
+  iunlockput(ip);
+  end_op();
+  return 0;
+}
+
+int sys_chdir(void) {
+  char *path;
+  struct inode *ip;
+  struct proc *curproc = myproc();
+  if(argstr(0, &path) < 0 || (ip = namei(path)) == 0) return -1;
+  ilock(ip);
+  if(ip->type != T_DIR) { iunlockput(ip); return -1; }
+  iunlock(ip);
+  begin_op();
+  iput(curproc->cwd);
+  end_op();
+  curproc->cwd = ip;
+  return 0;
+}
+
+int sys_pipe(void) {
+  return -1; // Dummy return for p25. Pipes are added in p26!
+}
+
+int sys_mknod(void) {
+  struct inode *ip;
+  char *path;
+  int major, minor;
+
+  if((argstr(0, &path) < 0) ||
+     (argint(1, &major) < 0) ||
+     (argint(2, &minor) < 0)){
+    return -1;
+  }
+  
+  begin_op();
+  if((ip = create(path, T_DEV, major, minor)) == 0){
+    end_op();
+    return -1;
+  }
+  iunlockput(ip);
+  end_op();
+  
+  return 0;
 }

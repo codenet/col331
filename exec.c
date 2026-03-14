@@ -10,6 +10,7 @@
 int
 exec(char *path, char **argv)
 {
+  char *s, *last;
   int i, off;
   uint argc, sp, ustack[3+MAXARG+1];
   struct elfhdr elf;
@@ -31,6 +32,13 @@ exec(char *path, char **argv)
     argbuf_idx += len;
   }
 
+  // Prepare new address space 
+  if((offset = kalloc()) == 0){
+    return -1;
+  }
+  memset(offset, 0, PGSIZE);
+
+  // read path
   begin_op();
 
   if((ip = namei(path)) == 0){
@@ -60,7 +68,9 @@ exec(char *path, char **argv)
       goto bad;
     if(ph.vaddr % PGSIZE != 0)
       goto bad;
-    if(readi(ip, (char*)(curproc->offset + ph.vaddr), ph.off, ph.filesz) != ph.filesz)
+    if(ph.vaddr + ph.filesz > PGSIZE)
+      goto bad;
+    if(readi(ip, (char*)(offset + ph.vaddr), ph.off, ph.filesz) != ph.filesz)
       goto bad;
   }
   iunlockput(ip);

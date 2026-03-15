@@ -185,7 +185,7 @@ log_write(struct buf *b)
     panic("too big a transaction");
 
   for (i = 0; i < log.lh.n; i++) {
-    if (log.lh.block[i] == b->blockno)   // log absorbtion
+    if (log.lh.block[i] == b->blockno)   // log absorption
       break;
   }
   log.lh.block[i] = b->blockno;

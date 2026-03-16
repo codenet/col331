@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - '**'
-    types: [ labeled ]
+    types: [ labeled, opened, edited, synchronize, reopened, review_requested ]
   workflow_dispatch:
     branches:
       - '**'

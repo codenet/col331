@@ -1,12 +1,10 @@
-# Work In progress
-
 name: Validate PR Running
 
 on:
   pull_request:
     branches:
       - '**'
-    types: [ labeled, opened, edited, synchronize, reopened, review_requested ]
+    types: [ labeled ]
   workflow_dispatch:
     branches:
       - '**'

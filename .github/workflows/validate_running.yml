@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - '**'
-    types: [ labeled, opened, edited, synchronize, reopened, review_requested ]
+    types: [ labeled ]
   workflow_dispatch:
     branches:
       - '**'
@@ -28,4 +28,7 @@ jobs:
         sudo apt install -y qemu-system-x86 qemu-utils
 
     - name: Run in Qemu
-      run: make CC=gcc-11 qemu
+      run: timeout 10s make CC=gcc-11 qemu > output.txt || true
+
+    - name: Check output
+      run : grep "Tick! 100" output.txt

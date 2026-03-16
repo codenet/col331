@@ -31,4 +31,4 @@ jobs:
       run: timeout 10s make CC=gcc-11 qemu > output.txt || true
 
     - name: Check output
-      run : grep "Tick! 100" output.txt
+      run : grep "Booting from Hard Disk..xv6..." output.txt

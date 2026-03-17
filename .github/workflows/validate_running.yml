@@ -28,7 +28,7 @@ jobs:
         sudo apt install -y qemu-system-x86 qemu-utils
 
     - name: Run in Qemu
-      run: timeout 10s make CC=gcc-11 qemu > output.txt || true
+      run: timeout 5s make CC=gcc-11 qemu > output.txt || true
 
     - name: Check output
-      run : grep "Booting from Hard Disk..xv6..." output.txt
+      run :  awk 'NR==FNR {a = a $0; next} {b = b $0} END {if (index(b, a)) {print "Yes"} else {print "No"; exit 1}}' welcome.txt output.txt

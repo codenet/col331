@@ -1,7 +1,6 @@
 #include "types.h"
 #include "defs.h"
 #include "x86.h"
-// #include "spinlock.h"  
 #include "sleeplock.h"  
 #include "fs.h"
 #include "buf.h"

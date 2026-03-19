@@ -7,9 +7,11 @@
 #include "proc.h"
 #include "x86.h"
 #include "traps.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
-#include "spinlock.h"
+
 
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80

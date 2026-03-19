@@ -6,6 +6,7 @@ struct stat;
 struct context;
 struct proc;
 struct spinlock;
+struct sleeplock;
 
 // bio.c
 void            binit(void);
@@ -41,7 +42,9 @@ int             mknod(struct inode *ip, char* path, int major, int minor);
 // fs.c
 void            readsb(int dev, struct superblock *sb);
 void            iinit(int dev);
-void            iread(struct inode*);
+void            ilock(struct inode*);
+void            iunlock(struct inode*);
+void            iunlockput(struct inode*);
 struct inode*   iget(uint dev, uint inum);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
@@ -103,6 +106,12 @@ void            yield(void);
 void            forkret(void);
 void            sleep(void*);
 void            wakeup(void*);
+
+// sleeplock.c
+void            acquiresleep(struct sleeplock*);
+void            releasesleep(struct sleeplock*);
+int             holdingsleep(struct sleeplock*);
+void            initsleeplock(struct sleeplock*, char*);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);

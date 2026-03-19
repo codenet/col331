@@ -9,6 +9,7 @@ OBJS = \
 	string.o\
 	proc.o\
 	spinlock.o\
+	sleeplock.o\
 	trapasm.o\
 	trap.o\
 	vectors.o\

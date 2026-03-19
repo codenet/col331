@@ -101,8 +101,10 @@ void
 ideintr(void)
 {
   struct buf *b;
+  acquire(&idelock);
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
+    release(&idelock);
     return;
   }
   idequeue = b->qnext;
@@ -118,6 +120,7 @@ ideintr(void)
   // Start disk on next buf in queue.
   if(idequeue != 0)
     idestart(idequeue);
+  release(&idelock);
 }
 
 // Sync buf with disk.
@@ -144,10 +147,12 @@ iderw(struct buf *b)
   // Start disk if necessary.
   if(idequeue == b)
     idestart(b);
-  release(&idelock);
-
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID) {
-    sleep(b);
+    release(&idelock); // Must release before sleeping!
+    sleep(b); 
+    acquire(&idelock); // Must reacquire after waking!
   }
+
+  release(&idelock); // ADD a final release here for when the loop finishes!
 }

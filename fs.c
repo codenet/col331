@@ -120,6 +120,9 @@ void
 iinit(int dev)
 {
   // initlock(&icache.lock, "icache");
+  // for(int i = 0; i < NINODE; i++){
+  //   initsleeplock(&icache.inode[i].lock, "inode");
+  // }
   readsb(dev, &sb);
   cprintf("sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,

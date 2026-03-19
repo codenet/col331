@@ -125,24 +125,18 @@ recover_from_log(void)
 void
 begin_op(void)
 {
-  // acquire(&log.lock);
   pushcli();
   while(1){
     if(log.committing){
-      // release(&log.lock); // Drop lock to prevent deadlock
-      popcli();
-      sleep(&log);        // Basic sleep
-      // acquire(&log.lock); // Reacquire
-      pushcli();
+      // REMOVE: popcli();
+      sleep(&log);        
+      // REMOVE: pushcli();
     } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
-      // release(&log.lock); // Drop lock to prevent deadlock
-      popcli();
-      sleep(&log);        // Basic sleep
-      // acquire(&log.lock); // Reacquire
-      pushcli();
+      // REMOVE: popcli();
+      sleep(&log);        
+      // REMOVE: pushcli();
     } else {
       log.outstanding += 1;
-      // release(&log.lock);
       popcli();
       break;
     }

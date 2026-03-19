@@ -20,18 +20,14 @@ initsleeplock(struct sleeplock *lk, char *name)
 void
 acquiresleep(struct sleeplock *lk)
 {
-  // acquire(&lk->lk);
   pushcli();
   while (lk->locked) {
-    // release(&lk->lk);
-    popcli();
+    // REMOVE: popcli();
     sleep(lk);
-    // acquire(&lk->lk);
-    pushcli();
+    // REMOVE: pushcli();
   }
   lk->locked = 1;
   lk->pid = myproc()->pid;
-  // release(&lk->lk);
   popcli();
 }
 

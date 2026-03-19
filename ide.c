@@ -155,11 +155,9 @@ iderw(struct buf *b)
     idestart(b);
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID) {
-    // release(&idelock); // Must release before sleeping!
-      popcli();
+    // REMOVE: popcli();
     sleep(b); 
-    // acquire(&idelock); // Must reacquire after waking!
-    pushcli();
+    // REMOVE: pushcli();
   }
 
   // release(&idelock);

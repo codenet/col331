@@ -223,8 +223,7 @@ forkret(void)
 }
 
 
-// Atomically release lock and sleep on chan.
-// Reacquires lock when awakened.
+
 void
 sleep(void *chan)
 {
@@ -233,11 +232,8 @@ sleep(void *chan)
   if(p == 0)
     panic("sleep");
 
-  // Must acquire ptable.lock in order to
-  // change p->state and then call sched.
-  // acquire(&ptable.lock);
-  pushcli();
-  // Go to sleep.
+  // REMOVE: pushcli(); 
+
   p->chan = chan;
   p->state = SLEEPING;
 
@@ -246,10 +242,8 @@ sleep(void *chan)
   // Tidy up.
   p->chan = 0;
 
-  // release(&ptable.lock);
-  popcli();
+  // REMOVE: popcli();
 }
-
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
 static void

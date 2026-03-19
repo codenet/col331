@@ -30,7 +30,7 @@ the compiler. If we search `swtch` in `kernel.asm`, we see the following code:
 
 `eax` and `edx` registers are pushed on the stack. `eip` will be saved as the 
 return address by the `call` instruction itself. Interestingly, `ecx` is also a
-caller-saved register, but since the callee of `swtch`, i.e, `scheduler`, did
+caller-saved register, but since the caller of `swtch`, i.e, `scheduler`, did
 not modify `ecx`, the compiler chose to not save it. Caller of `scheduler` would
 have already saved it.
 

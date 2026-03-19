@@ -1,10 +1,10 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
-// #include "spinlock.h"
 #include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
+
 
 // Simple logging that allows concurrent FS system calls.
 //
@@ -37,7 +37,7 @@ struct logheader {
 };
 
 struct log {
-  // struct spinlock lock;
+ 
   int start;
   int size;
   int outstanding; // how many FS sys calls are executing.
@@ -56,8 +56,8 @@ initlog(int dev)
   if (sizeof(struct logheader) >= BSIZE)
     panic("initlog: too big logheader");
 
+
   struct superblock sb;
-  // initlock(&log.lock, "log");
   readsb(dev, &sb);
   log.start = sb.logstart;
   log.size = sb.nlog;
@@ -149,7 +149,6 @@ end_op(void)
 {
   int do_commit = 0;
 
-  // acquire(&log.lock);
   pushcli();
   log.outstanding -= 1;
   if(log.committing)
@@ -163,18 +162,15 @@ end_op(void)
     // the amount of reserved space.
     wakeup(&log);
   }
-  // release(&log.lock);
   popcli();
 
   if(do_commit){
     // call commit w/o holding locks, since not allowed
     // to sleep with locks.
     commit();
-    // acquire(&log.lock);
     pushcli();
     log.committing = 0;
     wakeup(&log);
-    // release(&log.lock);
     popcli();
   }
 }
@@ -226,7 +222,6 @@ log_write(struct buf *b)
   if (log.outstanding < 1)
     panic("log_write outside of trans");
 
-  // acquire(&log.lock);
   pushcli();
   for (i = 0; i < log.lh.n; i++) {
     if (log.lh.block[i] == b->blockno)   // log absorbtion
@@ -236,7 +231,6 @@ log_write(struct buf *b)
   if (i == log.lh.n)
     log.lh.n++;
   b->flags |= B_DIRTY; // prevent eviction
-  // release(&log.lock);
   popcli();
 }
 

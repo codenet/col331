@@ -7,7 +7,6 @@
 #include "proc.h"
 #include "x86.h"
 #include "traps.h"
-// #include "spinlock.h"
 #include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
@@ -28,7 +27,6 @@
 // idequeue->qnext points to the next buf to be processed.
 // You must hold idelock while manipulating queue.
 
-// struct spinlock idelock;     
 static struct buf *idequeue;
 
 static int havedisk1;
@@ -51,7 +49,6 @@ ideinit(void)
 {
   int i;
 
-  // initlock(&idelock, "ide");
   ioapicenable(IRQ_IDE, ncpu - 1);
   idewait(0);
 
@@ -103,11 +100,9 @@ void
 ideintr(void)
 {
   struct buf *b;
-  // acquire(&idelock);
   pushcli();
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
-    // release(&idelock);
     popcli();
     return;
   }
@@ -124,7 +119,6 @@ ideintr(void)
   // Start disk on next buf in queue.
   if(idequeue != 0)
     idestart(idequeue);
-  // release(&idelock);
   popcli();
 }
 
@@ -136,7 +130,6 @@ iderw(struct buf *b)
 {
   struct buf **pp;
 
-  // acquire(&idelock);
   pushcli();
 
   if((b->flags & (B_VALID|B_DIRTY)) == B_VALID)
@@ -160,6 +153,5 @@ iderw(struct buf *b)
     // REMOVE: pushcli();
   }
 
-  // release(&idelock);
   popcli();
 }

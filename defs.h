@@ -102,13 +102,10 @@ void            yield(void);
 void             forkret(void);
 
 // spinlock.c
-// struct spinlock; 
 void            getcallerpcs(void*, uint*);
 void            pushcli(void);
 void            popcli(void);
-// void            initlock(struct spinlock*, char*);
-// void            acquire(struct spinlock*);
-// void            release(struct spinlock*);
+
 
 // string.c
 int             memcmp(const void*, const void*, uint);

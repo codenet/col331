@@ -18,7 +18,7 @@
 #include "fs.h"
 #include "buf.h"
 #include "file.h"
-// #include "spinlock.h"
+
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
@@ -111,14 +111,13 @@ bfree(int dev, uint b)
 //
 
 struct {
-  // struct spinlock lock; 
+  
   struct inode inode[NINODE];
 } icache;
 
 void
 iinit(int dev)
 {
-  // initlock(&icache.lock, "icache");
   readsb(dev, &sb);
   cprintf("sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,
@@ -159,14 +158,13 @@ ialloc(uint dev, short type)
 void
 iput(struct inode *ip)
 {
-  // acquire(&icache.lock);
   pushcli();
   
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
     if(r == 1){
       // inode has no links and no other references: truncate and free.
-      // release(&icache.lock);
+     
       popcli();
       
       itrunc(ip);
@@ -174,13 +172,11 @@ iput(struct inode *ip)
       iupdate(ip);
       ip->valid = 0;
       
-      // acquire(&icache.lock);
       pushcli();
     }
   }
   
   ip->ref--;
-  // release(&icache.lock); // (Final release)
   popcli();
 }
 
@@ -213,7 +209,6 @@ iget(uint dev, uint inum)
 {
   struct inode *ip, *empty;
 
-  // acquire(&icache.lock);
   pushcli();
 
   // Is the inode already cached?
@@ -221,7 +216,7 @@ iget(uint dev, uint inum)
   for(ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++){
     if(ip->ref > 0 && ip->dev == dev && ip->inum == inum){
       ip->ref++;
-      // release(&icache.lock);
+     
       popcli();
       return ip;
     }
@@ -239,7 +234,7 @@ iget(uint dev, uint inum)
   ip->ref = 1;
   ip->valid = 0;
 
-  // release(&icache.lock);
+ 
   popcli();
 
   return ip;

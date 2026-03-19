@@ -80,6 +80,3 @@ example, `procdump` in `proc.c` acquires a `ptable.lock` and then calls
 `cons.lock`, we should not immediately enable interrupts as it essentially also
 releases `ptable.lock`. Therefore, `spinlock.c` maintains a counter `ncli`; the
 interrupts are enabled only when `ncli` becomes zero.
-
-> We call these locks as spinlocks to keep the code compatible with xv6-public.
-However, there is nothing spinning inside these spinlocks :-)

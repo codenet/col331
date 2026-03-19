@@ -9,7 +9,7 @@
 #include "traps.h"
 #include "fs.h"
 #include "buf.h"
-// #include "spinlock.h"
+
 
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80
@@ -49,7 +49,6 @@ ideinit(void)
 {
   int i;
 
-  // initlock(&idelock, "ide");
   ioapicenable(IRQ_IDE, ncpu - 1);
   idewait(0);
 
@@ -127,7 +126,6 @@ iderw(struct buf *b)
 {
   struct buf **pp;
 
-  // acquire(&idelock);
   pushcli();
 
   if((b->flags & (B_VALID|B_DIRTY)) == B_VALID)
@@ -144,7 +142,7 @@ iderw(struct buf *b)
   // Start disk if necessary.
   if(idequeue == b)
     idestart(b);
-  // release(&idelock);
+  
   popcli();
 
   // Wait for request to finish.

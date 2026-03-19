@@ -3,7 +3,7 @@
 #include "param.h"
 #include "fs.h"
 #include "buf.h"
-// #include "spinlock.h"
+
 
 // Simple logging that allows concurrent FS system calls.
 //
@@ -36,7 +36,7 @@ struct logheader {
 };
 
 struct log {
-  // struct spinlock lock;
+ 
   int start;
   int size;
   int committing;  // in commit(), please wait.
@@ -54,7 +54,6 @@ initlog(int dev)
   if (sizeof(struct logheader) >= BSIZE)
     panic("initlog: too big logheader");
 
-  // initlock(&log.lock, "log");
 
   struct superblock sb;
   readsb(dev, &sb);
@@ -179,7 +178,6 @@ log_write(struct buf *b)
 {
   int i;
 
-  // acquire(&log.lock);
   pushcli();
 
   if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
@@ -193,7 +191,7 @@ log_write(struct buf *b)
   if (i == log.lh.n)
     log.lh.n++;
 
-  // release(&log.lock);
+  
   popcli();
   b->flags |= B_DIRTY; // prevent eviction
 }

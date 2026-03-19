@@ -1,3 +1,5 @@
+#include "sleeplock.h"
+
 struct file {
   enum { FD_NONE, FD_INODE } type;
   int ref; // reference count
@@ -13,7 +15,7 @@ struct inode {
   uint inum;          // Inode number
   int ref;            // Reference count
   int valid;          // inode has been read from disk?
-
+  struct sleeplock lock;
   short type;         // copy of disk inode
   short major;
   short minor;

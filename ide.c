@@ -7,9 +7,11 @@
 #include "proc.h"
 #include "x86.h"
 #include "traps.h"
+#include "spinlock.h"
+#include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
-#include "spinlock.h"
+
 
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80
@@ -101,8 +103,10 @@ void
 ideintr(void)
 {
   struct buf *b;
+  acquire(&idelock);
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
+    release(&idelock);
     return;
   }
   idequeue = b->qnext;
@@ -118,6 +122,7 @@ ideintr(void)
   // Start disk on next buf in queue.
   if(idequeue != 0)
     idestart(idequeue);
+  release(&idelock);
 }
 
 // Sync buf with disk.

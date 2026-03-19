@@ -15,7 +15,7 @@
 #include "stat.h"
 #include "mmu.h"
 #include "proc.h"
-#include "spinlock.h"
+// #include "spinlock.h"
 #include "sleeplock.h"
 #include "fs.h"
 #include "buf.h"
@@ -112,14 +112,14 @@ bfree(int dev, uint b)
 //
 
 struct {
-  struct spinlock lock; 
+  // struct spinlock lock; 
   struct inode inode[NINODE];
 } icache;
 
 void
 iinit(int dev)
 {
-  initlock(&icache.lock, "icache");
+  // initlock(&icache.lock, "icache");
   readsb(dev, &sb);
   cprintf("sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,
@@ -162,7 +162,8 @@ ialloc(uint dev, short type)
 void
 iput(struct inode *ip)
 {
-  acquire(&icache.lock);
+  // acquire(&icache.lock);
+  pushcli();
   
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
@@ -170,7 +171,8 @@ iput(struct inode *ip)
       // inode has no links and no other references: truncate and free.
       
       // 1. Drop the spinlock before we acquire the sleep lock
-      release(&icache.lock);
+      // release(&icache.lock);
+      popcli();
       
       // 2. Acquire the sleep lock to safely modify the disk
       acquiresleep(&ip->lock);
@@ -184,12 +186,14 @@ iput(struct inode *ip)
       releasesleep(&ip->lock);
       
       // 4. Reacquire the spinlock to safely decrement the ref count
-      acquire(&icache.lock);
+      // acquire(&icache.lock);
+      pushcli();
     }
   }
   
   ip->ref--;
-  release(&icache.lock); // (Final release)
+  // release(&icache.lock); 
+  popcli();
 }
 
 // Copy a modified in-memory inode to disk.
@@ -221,14 +225,16 @@ iget(uint dev, uint inum)
 {
   struct inode *ip, *empty;
 
-  acquire(&icache.lock);
+  // acquire(&icache.lock);
+  pushcli();
 
   // Is the inode already cached?
   empty = 0;
   for(ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++){
     if(ip->ref > 0 && ip->dev == dev && ip->inum == inum){
       ip->ref++;
-      release(&icache.lock);
+      // release(&icache.lock);
+      popcli();
       return ip;
     }
     if(empty == 0 && ip->ref == 0)    // Remember empty slot.
@@ -245,7 +251,8 @@ iget(uint dev, uint inum)
   ip->ref = 1;
   ip->valid = 0;
   initsleeplock(&ip->lock, "inode");
-  release(&icache.lock);
+  // release(&icache.lock);
+  popcli();
 
   return ip;
 }

@@ -4,7 +4,7 @@
 
 struct sleeplock {
   uint locked;       // Is the lock held?
-  struct spinlock lk; // Spinlock protecting this sleep lock
+  // struct spinlock lk; // Spinlock protecting this sleep lock
   
   // For debugging:
   char *name;        // Name of lock.

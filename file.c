@@ -9,35 +9,33 @@
 #include "file.h"
 #include "stat.h"
 #include "fcntl.h"
-// #include "spinlock.h"
+
 
 struct devsw devsw[NDEV];
 struct {
   struct file file[NFILE];
-  // struct spinlock lock;
+ 
 } ftable;
 
 void
 fileinit(void)
 {
-  // initlock(&ftable.lock, "ftable");
 }
 // Allocate a file structure.
 struct file*
 filealloc(void)
 {
   struct file *f;
-  // acquire(&ftable.lock);
   pushcli();
   for(f = ftable.file; f < ftable.file + NFILE; f++){
     if(f->ref == 0){
       f->ref = 1;
-      // release(&ftable.lock);
+     
       popcli();
       return f;
     }
   }
-  // release(&ftable.lock);
+ 
   popcli();
   return 0;
 }
@@ -46,12 +44,11 @@ filealloc(void)
 struct file*
 filedup(struct file *f)
 {
-  // acquire(&ftable.lock);
   pushcli();
   if(f->ref < 1)
     panic("filedup");
   f->ref++;
-  // release(&ftable.lock);
+ 
   popcli();
   return f;
 }
@@ -62,19 +59,18 @@ fileclose(struct file *f)
 {
   struct file ff;
 
-  // acquire(&ftable.lock);
   pushcli();
   if(f->ref < 1)
     panic("fileclose");
   if(--f->ref > 0){
-    // release(&ftable.lock);
+   
     popcli();
     return;
   }
   ff = *f;
   f->ref = 0;
   f->type = FD_NONE;
-  // release(&ftable.lock);
+ 
   popcli();
 
   if(ff.type == FD_INODE){

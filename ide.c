@@ -144,10 +144,12 @@ iderw(struct buf *b)
   // Start disk if necessary.
   if(idequeue == b)
     idestart(b);
-  release(&idelock);
-
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID) {
-    sleep(b);
+    release(&idelock); // Must release before sleeping!
+    sleep(b); 
+    acquire(&idelock); // Must reacquire after waking!
   }
+
+  release(&idelock); // ADD a final release here for when the loop finishes!
 }

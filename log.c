@@ -127,10 +127,13 @@ begin_op(void)
   acquire(&log.lock);
   while(1){
     if(log.committing){
-      sleep(&log);
+      release(&log.lock); // Drop lock to prevent deadlock
+      sleep(&log);        // Basic sleep
+      acquire(&log.lock); // Reacquire
     } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
-      // this op might exhaust log space; wait for commit.
-      sleep(&log);
+      release(&log.lock); // Drop lock to prevent deadlock
+      sleep(&log);        // Basic sleep
+      acquire(&log.lock); // Reacquire
     } else {
       log.outstanding += 1;
       release(&log.lock);
@@ -138,7 +141,6 @@ begin_op(void)
     }
   }
 }
-
 // called at the end of each FS system call.
 // commits if this was the last outstanding operation.
 void

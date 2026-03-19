@@ -128,13 +128,9 @@ begin_op(void)
   acquire(&log.lock);
   while(1){
     if(log.committing){
-      release(&log.lock); // Drop lock to prevent deadlock
-      sleep(&log);        // Basic sleep
-      acquire(&log.lock); // Reacquire
+      sleep(&log, &log.lock);        // Basic sleep
     } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
-      release(&log.lock); // Drop lock to prevent deadlock
-      sleep(&log);        // Basic sleep
-      acquire(&log.lock); // Reacquire
+      sleep(&log, &log.lock);        // Basic sleep
     } else {
       log.outstanding += 1;
       release(&log.lock);

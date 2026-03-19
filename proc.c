@@ -218,26 +218,41 @@ forkret(void)
 // Atomically release lock and sleep on chan.
 // Reacquires lock when awakened.
 void
-sleep(void *chan)
+sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
 
   if(p == 0)
     panic("sleep");
 
+  if(lk == 0)
+    panic("sleep without lk");
+
   // Must acquire ptable.lock in order to
   // change p->state and then call sched.
-  acquire(&ptable.lock);
+  // Once we hold ptable.lock, we can be
+  // guaranteed that we won't miss any wakeup
+  // (wakeup runs with ptable.lock locked),
+  // so it's okay to release lk.
+  if(lk != &ptable.lock){
+    acquire(&ptable.lock);
+    release(lk);
+  }
+
   // Go to sleep.
   p->chan = chan;
   p->state = SLEEPING;
 
-  sched();
+  sched(); // Yield the CPU
 
   // Tidy up.
   p->chan = 0;
 
-  release(&ptable.lock);
+  // Reacquire original lock.
+  if(lk != &ptable.lock){
+    release(&ptable.lock);
+    acquire(lk);
+  }
 }
 
 // Wake up all processes sleeping on chan.

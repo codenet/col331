@@ -12,10 +12,13 @@ struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 uint ticks;
 
+struct spinlock tickslock;
+
 void
 tvinit(void)
 {
   int i;
+  initlock(&tickslock, "time");
   for(i = 0; i < 256; i++)
     SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
   SETGATE(idt[T_SYSCALL], 1, SEG_KCODE<<3, vectors[T_SYSCALL], DPL_USER);
@@ -38,8 +41,10 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
+    acquire(&tickslock);
     ticks++;
     wakeup(&ticks);
+    release(&tickslock);
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_IDE:

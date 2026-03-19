@@ -307,7 +307,7 @@ mknod(struct inode *ip, char* path, int major, int minor)
     end_op();
     return -1;
   }
-  iput(ip);
+  iunlockput(ip);
   end_op();
   return 0;
 }
@@ -321,7 +321,7 @@ int mkdir(char *path)
     end_op();
     return -1;
   }
-  iput(ip);
+  iunlockput(ip);
   end_op();
   return 0;
 }

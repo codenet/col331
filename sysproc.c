@@ -1,6 +1,7 @@
 #include "types.h"
 #include "x86.h"
 #include "defs.h"
+#include "spinlock.h"
 
 int
 sys_sleep(void)
@@ -10,10 +11,12 @@ sys_sleep(void)
 
   if(argint(0, &n) < 0)
     return -1;
+  acquire(&tickslock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){
-    sleep(&ticks);
+    sleep(&ticks, &tickslock);
   }
+  release(&tickslock);
   return 0;
 }
 
@@ -22,6 +25,8 @@ sys_sleep(void)
 int
 sys_uptime(void) {
   volatile uint xticks;
+  acquire(&tickslock);
   xticks = ticks;
+  release(&tickslock);
   return xticks;
 }

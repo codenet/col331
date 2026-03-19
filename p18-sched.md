@@ -59,7 +59,7 @@ Putting it all together:
 6. Timer interrupt happens
    1. Hardware looks up the kernel stack position using TSS->esp0.
    2. Hardware pushes stack selector, stack pointer, eflags, and code selector,
-   eip, error code, trapno to kernel stack.
+   eip and error code (in some cases) to kernel stack.
    3. Hardware jumps to `alltraps` as it is the trap handler set by the OS in IDT. 
    CPU is now running in ring 0.
    4. `alltraps` saves the segment selectors, user program registers including

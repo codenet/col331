@@ -1,7 +1,7 @@
 ## Interacting with devices like files
 
 One cool thing about xv6 (and Linux) is that many resources are exposed as
-files. `console.c` just defines `consoleread` and `consolewrite` methods and map
+files. `console.c` just defines `consoleread` and `consolewrite` methods and maps
 them to the `struct devsw` to expose the console device as a file. 
 
 `main.c` calls `consoleinit` to let `console.c` map the functions and then calls

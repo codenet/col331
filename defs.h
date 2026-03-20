@@ -69,7 +69,6 @@ void            begin_op();
 void            end_op();
 
 // mp.c
-extern int      ismp;
 void            mpinit(void);
 
 // picirq.c

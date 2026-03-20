@@ -43,7 +43,6 @@ cprintf(char *fmt, ...)
   char *s;
 
   if (fmt == 0)
-    // panic("null fmt");
     return;
 
   argp = (uint*)(void*)(&fmt + 1);

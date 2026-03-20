@@ -1,7 +1,6 @@
 // Mutual exclusion spin locks.
 
 #include "types.h"
-// #include "memlayout.h"
 
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
@@ -12,7 +11,6 @@ getcallerpcs(void *v, uint pcs[])
 
   ebp = (uint*)v - 2;
   for(i = 0; i < 10; i++){
-    // if(ebp == 0 || ebp < (uint*)KERNBASE || ebp == (uint*)0xffffffff)
     if(ebp == 0 || ebp == (uint*)0xffffffff)
       break;
     pcs[i] = ebp[1];     // saved %eip

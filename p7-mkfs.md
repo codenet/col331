@@ -18,7 +18,7 @@ in a hex editor, we see:
 This is the `struct superblock`:
 * `size` = `0x03e8` = 1,000 (`FSSIZE`). This indicates the number of blocks in
   the file system.
-* `nblock`=`0x03cb` = 971. This indicates the number of available data blocks.
+* `nblocks`=`0x03cb` = 971. This indicates the number of available data blocks.
   (more below).
 * `ninodes`=`0xc8` = 200. Hence, inodes are present in 200/8 = 25 blocks.
 * `nlog` = 0, `logstart`=2. Ignore this for now.

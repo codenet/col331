@@ -21,7 +21,6 @@ void            consputc(int);
 struct file*    filealloc(void);
 void            fileclose(struct file*);
 struct file*    filedup(struct file*);
-void            fileinit(void);
 int             fileread(struct file*, char*, int n);
 int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);

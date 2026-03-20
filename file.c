@@ -33,7 +33,6 @@ filealloc(void)
     }
   }
   popcli();
-
   return 0;
 }
 
@@ -65,7 +64,6 @@ fileclose(struct file *f)
   ff = *f;
   f->ref = 0;
   f->type = FD_NONE;
- 
   popcli();
 
   if(ff.type == FD_INODE){

@@ -56,30 +56,29 @@ wait forever for its buffer `b2` to be read since it is not even in the
 `idequeue`!  Even though P2 "won the race" by writing to `l->qnext` first, it
 lost its buffer :-)
 
-To avoid such unfortunate interleavings, we surround such *critical sections*
-with `acquire` and `release` of locks. Only one instruction sequence should be
-able to acquire a lock at a time. With these locks, we say that execution of
-critical sections become *mutually exclusive*. Such locks are also sometimes
-called mutual exclusion locks or mutexes. Since there is no parallelism,
-`acquire` can disable interrupts, and `release` can enable it.
+To avoid such unfortunate interleavings, we disable interrupts while running
+*critical sections*.  Only one instruction sequence should be able to enter a
+critical section at a time, the whole section should be executed *atomically*.
+Disabling interrupts using `pushcli`/`popcli` is sufficient since there is no
+parallelism.
 
-This branch adds lock acquires and releases around all the kernel data
-structures which may be modified from system calls. To properly enable-disable
-interrupts, we need to do some additional bookkeeping. 
+This branch protects critical sections: i.e., code which can be called from 
+system call handler and can modify kernel data structures. To properly
+enable-disable interrupts, we need to do some additional bookkeeping. 
 
-Firstly, consider `cons.lock` in `console.c`.  `cprintf` can be called from
-system call handlers like in `exec.c` or from interrupt handlers in `trap.c`.
-Therefore, when we release `cons.lock` in `cprintf`, we do not want to
-unconditionally enable interrupts, as we do not want to take interrupts while
-handling interrupts. Therefore, `acquire` remembers whether interrupts were
-enabled in an `intena` flag; `release` calls `sti` only if `intena` was set.
+Firstly, consider `console.c`.  `cprintf` can be called from system call
+handlers like in `exec.c` or from interrupt handlers in `trap.c`.  Therefore,
+when we exit `cprintf`, we do not want to unconditionally enable interrupts, as
+we do not want to take interrupts while handling interrupts. Therefore,
+`pushcli` remembers whether interrupts were enabled in an `intena` flag;
+`popcli` calls `sti` only if `intena` was set.
 
-Secondly, we may try to acquire a lock when another one was already held. For
-example, `procdump` in `proc.c` acquires a `ptable.lock` and then calls
-`cprintf` which itself acquires `cons.lock`. When `cprintf` releases
-`cons.lock`, we should not immediately enable interrupts as it essentially also
-releases `ptable.lock`. Therefore, `spinlock.c` maintains a counter `ncli`; the
-interrupts are enabled only when `ncli` becomes zero.
+Secondly, critical sections may be nested. For example, `procdump` in `proc.c`
+calls `pushcli` and then calls `cprintf` which itself calls `pushcli`.  When
+`cprintf` calls `popcli`, we should not immediately enable interrupts.
+Therefore, `spinlock.c` maintains a counter `ncli`; the interrupts are enabled
+only when `ncli` becomes zero.
 
-> We call these locks as spinlocks to keep the code compatible with xv6-public.
-However, there is nothing spinning inside these spinlocks :-)
+> `pushcli`/`popcli` continue to live in spinlock.c to keep the code compatible
+with xv6-public. spinlocks are not yet implemented as there is no parallelism
+yet.

@@ -47,10 +47,10 @@ Putting it all together:
    1. Kernel stack starts with a `trapframe` which will be later used by the
    hardware to save and restore all the registers used by the user program.
    2. Segment selectors for the user program are set up in the `trapframe`.
-   3. `trapframe` is followed by `context` which is all initiliazed to zero
+   3. `trapframe` is followed by `context` which is all initialized to zero
    except `eip` which is set to `trapret`.
 3. OS called scheduler. Scheduler found the runnable process and called `swtch`. 
-   1. `swtch` saves the registers in the currently executing stack and switch to
+   1. `swtch` saves the registers in the currently executing stack and switches to
    the kernel stack of the user program.
 4. When `swtch` returns, the control jumps to `trapret` as this was saved as `eip`
    in the new process' context. `trapret` sets up segment selectors. And finally 

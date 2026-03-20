@@ -106,7 +106,6 @@ void            getcallerpcs(void*, uint*);
 void            pushcli(void);
 void            popcli(void);
 
-
 // string.c
 int             memcmp(const void*, const void*, uint);
 void*           memmove(void*, const void*, uint);
@@ -131,7 +130,6 @@ void            syscall(void);
 void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
-// extern struct spinlock tickslock;
 
 // uart.c
 void            uartinit(void);

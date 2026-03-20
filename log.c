@@ -4,7 +4,6 @@
 #include "fs.h"
 #include "buf.h"
 
-
 // Simple logging that allows concurrent FS system calls.
 //
 // A log transaction contains the updates of multiple FS system
@@ -36,7 +35,6 @@ struct logheader {
 };
 
 struct log {
- 
   int start;
   int size;
   int committing;  // in commit(), please wait.
@@ -177,9 +175,7 @@ void
 log_write(struct buf *b)
 {
   int i;
-
   pushcli();
-
   if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
     panic("too big a transaction");
 
@@ -190,8 +186,6 @@ log_write(struct buf *b)
   log.lh.block[i] = b->blockno;
   if (i == log.lh.n)
     log.lh.n++;
-
-  
   popcli();
   b->flags |= B_DIRTY; // prevent eviction
 }

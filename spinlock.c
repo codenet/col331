@@ -6,7 +6,6 @@
 #include "mmu.h"
 #include "proc.h"
 
-
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
 getcallerpcs(void *v, uint pcs[])

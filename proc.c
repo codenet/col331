@@ -6,9 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 
-
 struct {
- 
   struct proc proc[NPROC];
 } ptable;
 
@@ -51,14 +49,12 @@ allocproc(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-  
   popcli();
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  
   popcli();
 
   if((p->offset = kalloc()) == 0){
@@ -143,7 +139,6 @@ scheduler(void)
   for(;;){
     // Enable interrupts on this processor.
     sti();
-
     pushcli();
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -157,7 +152,6 @@ scheduler(void)
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
     }
-    
     popcli();
   }
 }
@@ -192,7 +186,6 @@ yield(void)
   pushcli();
   myproc()->state = RUNNABLE;
   sched();
-  
   popcli();
 }
 
@@ -200,7 +193,6 @@ void
 forkret(void)
 {
   // Release the lock held by the scheduler
-  
   popcli();
 }
 
@@ -226,6 +218,5 @@ procdump(void)
     cprintf("%d %s %s", p->pid, state, p->name);
     cprintf("\n");
   }
-  
   popcli();
 }

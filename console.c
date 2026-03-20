@@ -10,11 +10,7 @@
 #include "fs.h"
 #include "file.h"
 
-
 static int panicked = 0;
-struct {
- 
-} cons;
 static void
 printint(int xx, int base, int sign)
 {
@@ -85,7 +81,6 @@ cprintf(char *fmt, ...)
       break;
     }
   }
-     
   popcli(); 
 }
 
@@ -214,7 +209,6 @@ consolewrite(struct inode *ip, char *buf, int n)
   pushcli();
   for(i = 0; i < n; i++)
     consputc(buf[i] & 0xff);
- 
   popcli();
   return n;
 }

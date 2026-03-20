@@ -84,7 +84,6 @@ extern int      ismp;
 void            mpinit(void);
 
 // picirq.c
-void            picenable(int);
 void            picinit(void);
 
 // proc.c

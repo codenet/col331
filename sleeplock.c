@@ -20,9 +20,7 @@ acquiresleep(struct sleeplock *lk)
 {
   pushcli();
   while (lk->locked) {
-    // REMOVE: popcli();
     sleep(lk);
-    // REMOVE: pushcli();
   }
   lk->locked = 1;
   lk->pid = myproc()->pid;

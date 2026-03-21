@@ -31,7 +31,6 @@ main(void)
   fileinit();      // file table
   idtinit();       // load idt register
   sti();           // enable interrupts
-
   seginit();       // segment descriptors
   pinit();         // first process
   scheduler();     // start running processes

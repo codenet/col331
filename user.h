@@ -5,6 +5,7 @@ int open(const char*, int);
 int exec(char*);
 int uptime(void);
 int sleep(int);
+int getpid(void);
 int mknod(const char*, short, short);
 
 void printf(int, const char*, ...);

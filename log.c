@@ -37,7 +37,6 @@ struct logheader {
 };
 
 struct log {
- 
   int start;
   int size;
   int outstanding; // how many FS sys calls are executing.
@@ -128,13 +127,9 @@ begin_op(void)
   pushcli();
   while(1){
     if(log.committing){
-      // REMOVE: popcli();
       sleep(&log);        
-      // REMOVE: pushcli();
     } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
-      // REMOVE: popcli();
       sleep(&log);        
-      // REMOVE: pushcli();
     } else {
       log.outstanding += 1;
       popcli();
@@ -216,7 +211,7 @@ void
 log_write(struct buf *b)
 {
   int i;
-
+  pushcli();
   if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
     panic("too big a transaction");
   if (log.outstanding < 1)
@@ -224,7 +219,7 @@ log_write(struct buf *b)
 
   pushcli();
   for (i = 0; i < log.lh.n; i++) {
-    if (log.lh.block[i] == b->blockno)   // log absorbtion
+    if (log.lh.block[i] == b->blockno)   // log absorption
       break;
   }
   log.lh.block[i] = b->blockno;
@@ -233,4 +228,3 @@ log_write(struct buf *b)
   b->flags |= B_DIRTY; // prevent eviction
   popcli();
 }
-

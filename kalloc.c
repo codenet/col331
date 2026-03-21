@@ -8,7 +8,6 @@
 #include "memlayout.h"
 #include "mmu.h"
 
-
 void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
                    // defined by the kernel linker script in kernel.ld
@@ -19,7 +18,6 @@ struct run {
 
 
 struct {
-  
   struct run *freelist;
 } kmem;
 
@@ -57,7 +55,6 @@ kfree(char *v)
   pushcli();
   r->next = kmem.freelist;
   kmem.freelist = r;
-  
   popcli();
 }
 
@@ -68,12 +65,10 @@ char*
 kalloc(void)
 {
   struct run *r;
-
   pushcli();
   r = kmem.freelist;
   if(r)
     kmem.freelist = r->next;
-  
   popcli();
   return (char*)r;
 }

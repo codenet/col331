@@ -31,7 +31,6 @@ void
 readsb(int dev, struct superblock *sb)
 {
   struct buf *bp;
-
   bp = bread(dev, 1);
   memmove(sb, bp->data, sizeof(*sb));
   brelse(bp);
@@ -42,7 +41,6 @@ static void
 bzero(int dev, int bno)
 {
   struct buf *bp;
-
   bp = bread(dev, bno);
   memset(bp->data, 0, BSIZE);
   log_write(bp);
@@ -111,16 +109,12 @@ bfree(int dev, uint b)
 //
 
 struct {
-  
   struct inode inode[NINODE];
 } icache;
 
 void
 iinit(int dev)
 {
-  // for(int i = 0; i < NINODE; i++){
-  //   initsleeplock(&icache.inode[i].lock, "inode");
-  // }
   readsb(dev, &sb);
   cprintf("sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,
@@ -164,16 +158,11 @@ void
 iput(struct inode *ip)
 {
   pushcli();
-  
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
     if(r == 1){
       // inode has no links and no other references: truncate and free.
-      
-      // 1. Drop the spinlock before we acquire the sleep lock
       popcli();
-      
-      // 2. Acquire the sleep lock to safely modify the disk
       acquiresleep(&ip->lock);
       
       itrunc(ip);
@@ -181,14 +170,10 @@ iput(struct inode *ip)
       iupdate(ip);
       ip->valid = 0;
       
-      // 3. Release the sleep lock now that we are done
       releasesleep(&ip->lock);
-      
-      // 4. Reacquire the spinlock to safely decrement the ref count
       pushcli();
     }
   }
-  
   ip->ref--;
   popcli();
 }
@@ -221,15 +206,12 @@ struct inode*
 iget(uint dev, uint inum)
 {
   struct inode *ip, *empty;
-
   pushcli();
-
   // Is the inode already cached?
   empty = 0;
   for(ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++){
     if(ip->ref > 0 && ip->dev == dev && ip->inum == inum){
       ip->ref++;
-     
       popcli();
       return ip;
     }
@@ -248,7 +230,6 @@ iget(uint dev, uint inum)
   ip->valid = 0;
   initsleeplock(&ip->lock, "inode");
   popcli();
-
   return ip;
 }
 
@@ -261,7 +242,7 @@ ilock(struct inode *ip)
   if(ip == 0 || ip->ref < 1)
     panic("ilock");
 
-  acquiresleep(&ip->lock); // <-- Lock the inode
+  acquiresleep(&ip->lock); 
 
   if(ip->valid == 0){
     bp = bread(ip->dev, IBLOCK(ip->inum, sb));
@@ -330,7 +311,6 @@ bmap(struct inode *ip, uint bn)
     brelse(bp);
     return addr;
   }
-
   panic("bmap: out of range");
 }
 

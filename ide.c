@@ -11,7 +11,6 @@
 #include "fs.h"
 #include "buf.h"
 
-
 #define SECTOR_SIZE   512
 #define IDE_BSY       0x80
 #define IDE_DRDY      0x40
@@ -129,9 +128,7 @@ void
 iderw(struct buf *b)
 {
   struct buf **pp;
-
   pushcli();
-
   if((b->flags & (B_VALID|B_DIRTY)) == B_VALID)
     panic("iderw: nothing to do");
   if(b->dev != 0 && !havedisk1)
@@ -148,9 +145,7 @@ iderw(struct buf *b)
     idestart(b);
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID) {
-    // REMOVE: popcli();
     sleep(b); 
-    // REMOVE: pushcli();
   }
 
   popcli();

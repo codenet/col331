@@ -8,7 +8,7 @@
     int $T_SYSCALL; \
     ret
 
+SYSCALL(open)
 SYSCALL(write)
 SYSCALL(close)
 SYSCALL(exec)
-SYSCALL(open)

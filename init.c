@@ -5,11 +5,11 @@
 #include "fcntl.h"
 
 int
-main(void)
+main(int argc, char *argv[])
 {
   int fd = open("console", O_RDWR);
-  printf(fd, "Hello COL%d from init.c!\n", 331);
+  printf(fd, "Hello %s from init.c\n", argv[0]);
   close(fd);
 
-  // exec("/init");
+  while(1);
 }

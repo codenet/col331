@@ -59,9 +59,15 @@ found:
     p->state = UNUSED;
     return 0;
   }
-  p->sz = PGSIZE - KSTACKSIZE;
+  p->sz = PGSIZE;
 
-  sp = (char*)(p->offset + PGSIZE);
+  // kstack lives on a different segment
+  if((p->kstack = kalloc()) == 0){
+    p->state = UNUSED;
+    return 0;
+  }
+
+  sp = (char*)(p->kstack + PGSIZE);
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;
@@ -98,7 +104,7 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE - KSTACKSIZE;
+  p->tf->esp = PGSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));

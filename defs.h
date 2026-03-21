@@ -31,7 +31,7 @@ int             mkdir(char *path);
 struct file*    open(char* path, int omode);
 int             unlink(char* path, char* name);
 int             isdirempty(struct inode *dp);
-int             mknod(struct inode *ip, char* path, int major, int minor);
+int             mknod(char* path, int major, int minor);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);

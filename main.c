@@ -47,8 +47,7 @@ main(void)
   iinit(ROOTDEV);  // Read superblock to start reading inodes
   initlog(ROOTDEV);  // Initialize log
 
-  struct inode console;
-  mknod(&console, "console", CONSOLE, CONSOLE);
+  mknod("console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
   scheduler();     // start running processes

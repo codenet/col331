@@ -37,6 +37,7 @@ struct logheader {
 struct log {
   int start;
   int size;
+  int outstanding; // how many FS sys calls are executing.
   int committing;  // in commit(), please wait.
   int dev;
   struct logheader lh;
@@ -121,17 +122,54 @@ recover_from_log(void)
 void
 begin_op(void)
 {
-  
+  pushcli();
+  while(1){
+    if(log.committing){
+      popcli();
+      sleep(&log);        
+      pushcli();
+    } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
+      popcli();
+      sleep(&log);        
+      pushcli();
+    } else {
+      log.outstanding += 1;
+      popcli();
+      break;
+    }
+  }
 }
-
 // called at the end of each FS system call.
 // commits if this was the last outstanding operation.
 void
 end_op(void)
 {
-  // call commit w/o holding locks, since not allowed
-  // to sleep with locks.
-  commit();
+  int do_commit = 0;
+
+  pushcli();
+  log.outstanding -= 1;
+  if(log.committing)
+    panic("log.committing");
+  if(log.outstanding == 0){
+    do_commit = 1;
+    log.committing = 1;
+  } else {
+    // begin_op() may be waiting for log space,
+    // and decrementing log.outstanding has decreased
+    // the amount of reserved space.
+    wakeup(&log);
+  }
+  popcli();
+
+  if(do_commit){
+    // call commit w/o holding locks, since not allowed
+    // to sleep with locks.
+    commit();
+    pushcli();
+    log.committing = 0;
+    wakeup(&log);
+    popcli();
+  }
 }
 
 // Copy modified blocks from cache to log.
@@ -175,10 +213,14 @@ void
 log_write(struct buf *b)
 {
   int i;
-  pushcli();
+  
   if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
     panic("too big a transaction");
 
+  if (log.outstanding < 1)
+    panic("log_write outside of trans");
+
+  pushcli();
   for (i = 0; i < log.lh.n; i++) {
     if (log.lh.block[i] == b->blockno)   // log absorption
       break;
@@ -186,6 +228,6 @@ log_write(struct buf *b)
   log.lh.block[i] = b->blockno;
   if (i == log.lh.n)
     log.lh.n++;
-  popcli();
   b->flags |= B_DIRTY; // prevent eviction
+  popcli();
 }

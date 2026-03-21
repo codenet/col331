@@ -98,8 +98,10 @@ void
 ideintr(void)
 {
   struct buf *b;
+  pushcli();
   // First queued buffer is the active request.
   if((b = idequeue) == 0){
+    popcli();
     return;
   }
   idequeue = b->qnext;
@@ -110,10 +112,12 @@ ideintr(void)
 
   b->flags |= B_VALID;
   b->flags &= ~B_DIRTY;
+  wakeup(b);
 
   // Start disk on next buf in queue.
   if(idequeue != 0)
     idestart(idequeue);
+ popcli();
 }
 
 // Sync buf with disk.
@@ -138,14 +142,13 @@ iderw(struct buf *b)
   // Start disk if necessary.
   if(idequeue == b)
     idestart(b);
-  popcli();
-
-  // Wait for request to finish.
+  
+    // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID)
   {
-    // Warning: If we do not call noop(), compiler generates code that does not
-    // read "b->flags" again and therefore never come out of this while loop. 
-    // "b->flags" is modified by the trap handler in ideintr().  
-    noop();
+    popcli();
+    sleep(b); 
+    pushcli();
   }
+  popcli();
 }

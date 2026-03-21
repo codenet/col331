@@ -7,12 +7,14 @@
 int
 main(int argc, char *argv[])
 {
-  int fd = open("console", O_RDWR);
-  int pid = getpid();
-  printf(0, "[%d] Hello %s from init.c\n", pid, argv[0]);
+  if(open("console", O_RDWR) < 0){
+    mknod("console", 1, 1);
+    open("console", O_RDWR);
+  }
+  printf(0, "Hello %s from init.c\n", argv[0]);
   while(1) {
     int t = uptime();
-    printf(fd, "[%d] It's %d ticks since start.\n", pid, t);
+    printf(0, "It's %d ticks since start.\n", t);
     sleep(100);
   }
 }

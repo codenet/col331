@@ -191,11 +191,24 @@ yield(void)
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
+// A fork child's very first scheduling by scheduler()
+// will swtch here.  "Return" to user space.
 void
 forkret(void)
 {
-  // Release the lock held by the scheduler
+  static int first = 1;
+  // Still holding ptable.lock from scheduler.
   popcli();
+
+  if (first) {
+    // Some initialization functions must be run in the context
+    // of a regular process (e.g., they call sleep), and thus cannot
+    // be run from main().
+    first = 0;
+    iinit(ROOTDEV);
+    initlog(ROOTDEV);
+  }
+
   // Return to "caller", actually trapret (see allocproc).
 }
 

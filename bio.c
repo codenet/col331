@@ -24,9 +24,7 @@
 #include "fs.h"
 #include "buf.h"
 
-
 struct {
- 
   struct buf buf[NBUF];
 
   // Linked list of all buffers, through prev/next.
@@ -63,7 +61,6 @@ bget(uint dev, uint blockno)
   for(b = bcache.head.next; b != &bcache.head; b = b->next){
     if(b->dev == dev && b->blockno == blockno){
       b->refcnt++;
-     
       popcli();
       return b;
     }
@@ -78,7 +75,6 @@ bget(uint dev, uint blockno)
       b->blockno = blockno;
       b->flags = 0;
       b->refcnt = 1;
-     
       popcli();
       return b;
     }
@@ -124,6 +120,5 @@ brelse(struct buf *b)
     bcache.head.next->prev = b;
     bcache.head.next = b;
   }
- 
   popcli();
 }

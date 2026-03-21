@@ -36,10 +36,8 @@ struct logheader {
 };
 
 struct log {
- 
   int start;
   int size;
-  int outstanding; // how many FS sys calls are executing.
   int committing;  // in commit(), please wait.
   int dev;
   struct logheader lh;
@@ -216,21 +214,17 @@ void
 log_write(struct buf *b)
 {
   int i;
-
+  pushcli();
   if (log.lh.n >= LOGSIZE || log.lh.n >= log.size - 1)
     panic("too big a transaction");
-  if (log.outstanding < 1)
-    panic("log_write outside of trans");
 
-  pushcli();
   for (i = 0; i < log.lh.n; i++) {
-    if (log.lh.block[i] == b->blockno)   // log absorbtion
+    if (log.lh.block[i] == b->blockno)   // log absorption
       break;
   }
   log.lh.block[i] = b->blockno;
   if (i == log.lh.n)
     log.lh.n++;
-  b->flags |= B_DIRTY; // prevent eviction
   popcli();
+  b->flags |= B_DIRTY; // prevent eviction
 }
-

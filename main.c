@@ -30,8 +30,13 @@ main(void)
   fileinit();      // file table
   idtinit();       // load idt register
   sti();           // enable interrupts
+  iinit(ROOTDEV);  // Read superblock to start reading inodes
+  initlog(ROOTDEV);  // Initialize log
 
+  struct inode console;
+  mknod(&console, "console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
+  pinit();         // another process
   scheduler();     // start running processes
 }

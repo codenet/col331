@@ -19,7 +19,6 @@
 #include "buf.h"
 #include "file.h"
 
-
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
 // there should be one superblock per disk device, but we run with
@@ -31,7 +30,6 @@ void
 readsb(int dev, struct superblock *sb)
 {
   struct buf *bp;
-
   bp = bread(dev, 1);
   memmove(sb, bp->data, sizeof(*sb));
   brelse(bp);
@@ -42,7 +40,6 @@ static void
 bzero(int dev, int bno)
 {
   struct buf *bp;
-
   bp = bread(dev, bno);
   memset(bp->data, 0, BSIZE);
   log_write(bp);
@@ -111,7 +108,6 @@ bfree(int dev, uint b)
 //
 
 struct {
-  
   struct inode inode[NINODE];
 } icache;
 
@@ -159,23 +155,18 @@ void
 iput(struct inode *ip)
 {
   pushcli();
-  
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
     if(r == 1){
       // inode has no links and no other references: truncate and free.
-     
       popcli();
-      
       itrunc(ip);
       ip->type = 0;
       iupdate(ip);
       ip->valid = 0;
-      
       pushcli();
     }
   }
-  
   ip->ref--;
   popcli();
 }
@@ -208,15 +199,12 @@ struct inode*
 iget(uint dev, uint inum)
 {
   struct inode *ip, *empty;
-
   pushcli();
-
   // Is the inode already cached?
   empty = 0;
   for(ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++){
     if(ip->ref > 0 && ip->dev == dev && ip->inum == inum){
       ip->ref++;
-     
       popcli();
       return ip;
     }
@@ -233,10 +221,7 @@ iget(uint dev, uint inum)
   ip->inum = inum;
   ip->ref = 1;
   ip->valid = 0;
-
- 
   popcli();
-
   return ip;
 }
 
@@ -301,7 +286,6 @@ bmap(struct inode *ip, uint bn)
     brelse(bp);
     return addr;
   }
-
   panic("bmap: out of range");
 }
 

@@ -1,6 +1,8 @@
 #include "types.h"
 #include "x86.h"
 #include "defs.h"
+#include "mmu.h"
+#include "proc.h"
 
 int
 sys_sleep(void)
@@ -21,7 +23,11 @@ sys_sleep(void)
 // since start.
 int
 sys_uptime(void) {
-  volatile uint xticks;
-  xticks = ticks;
-  return xticks;
+  return ticks;
+}
+
+int
+sys_getpid(void)
+{
+  return myproc()->pid;
 }

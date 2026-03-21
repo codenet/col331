@@ -10,11 +10,9 @@
 #include "stat.h"
 #include "fcntl.h"
 
-
 struct devsw devsw[NDEV];
 struct {
   struct file file[NFILE];
- 
 } ftable;
 
 void
@@ -30,12 +28,10 @@ filealloc(void)
   for(f = ftable.file; f < ftable.file + NFILE; f++){
     if(f->ref == 0){
       f->ref = 1;
-     
       popcli();
       return f;
     }
   }
- 
   popcli();
   return 0;
 }
@@ -48,7 +44,6 @@ filedup(struct file *f)
   if(f->ref < 1)
     panic("filedup");
   f->ref++;
- 
   popcli();
   return f;
 }
@@ -63,14 +58,12 @@ fileclose(struct file *f)
   if(f->ref < 1)
     panic("fileclose");
   if(--f->ref > 0){
-   
     popcli();
     return;
   }
   ff = *f;
   f->ref = 0;
   f->type = FD_NONE;
- 
   popcli();
 
   if(ff.type == FD_INODE){

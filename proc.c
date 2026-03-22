@@ -55,7 +55,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  sp = (char*)(STARTPROC + (PROCSIZE>>12));
+  sp = (char*)(STARTPROC + (PROCSIZE << 12));
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;

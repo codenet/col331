@@ -32,8 +32,8 @@ switchuvm(struct proc *p)
     panic("switchuvm: no kstack");
 
   pushcli();
-  mycpu()->gdt[SEG_UCODE] = SEG(STA_X|STA_R, p->offset, (PROCSIZE << 12)-1, DPL_USER);
-  mycpu()->gdt[SEG_UDATA] = SEG(STA_W, p->offset, (PROCSIZE << 12)-1, DPL_USER);
+  mycpu()->gdt[SEG_UCODE] = SEG(STA_X|STA_R, p->offset, (PROCSIZE - 1) << 12, DPL_USER);
+  mycpu()->gdt[SEG_UDATA] = SEG(STA_W, p->offset, (PROCSIZE - 1) << 12, DPL_USER);
   lgdt(mycpu()->gdt, sizeof(mycpu()->gdt));
 
   mycpu()->gdt[SEG_TSS] = SEG16(STS_T32A, &mycpu()->ts,

@@ -9,11 +9,11 @@ OS, we see that our processes are able to print something to the console. This
 is implemented using *system calls*. Essentially, system calls allow processes
 to ask the OS to do some work on their behalf. System calls reuse the hardware's
 trap handling mechanism. Previously, when an hardware interrupt (like a timer
-interrupt) occured, the hardware was saving all the registers, moving from ring
+interrupt) occurred, the hardware was saving all the registers, moving from ring
 3 to ring 0, and then giving control to the OS. OS would handle the interrupt,
 restore the registers, and give control back to the process.
 
-System calls reuse this functionality but with the only difference that the
+System calls reuse this functionality but with the only difference being that the
 traps are now *software-generated* using the `int` instruction.  We can see that
 the `initcode.S` code jumps into `init.c` which first `open`s the console device
 in write only mode, then it `write`s a string to the device, and finally
@@ -50,12 +50,12 @@ making. It maintains a list of system call handlers as function pointers in its
 System call handlers call methods like `argint` and `argstr` to read call
 arguments from user's stack. `argint` assumes that each argument is 32-bit
 (4 bytes long): it looks up process' stack pointer in the trapframe, adds four
-to ignore the return address, then adds the argument number
-* 4 to locate the position of the argument. `fetchint` verifies that the read is
-happening within the bounds of the process. This is important as otherwise the
-user process could set its `esp` register to arbitrary locations in memory and
-then make the system call. `fetchint` also adds process' offset to mimic the
-memory segment behavior seen by the process.
+to ignore the return address, then adds the argument number* 4 to locate the 
+position of the argument. `fetchint` verifies that the read is happening within 
+the bounds of the process. This is important as otherwise the user process could 
+set its `esp` register to arbitrary locations in memory and then make the system 
+call. `fetchint` also adds process' offset to mimic the memory segment behavior 
+seen by the process.
 
 `argstr` works in a similar manner: it first reads pointer to the string and
 then goes and reads the string.

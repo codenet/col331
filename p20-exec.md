@@ -28,5 +28,5 @@ system calls to write each letter. The code in `printf.c` is very similar to
 that in `console.c`. `console.c` was sending each letter to UART interface where
 `printf.c` is making system calls.
 
-The systems calls are made available to `init.c` by `user.h` which are in-turn
+The system calls are made available to `init.c` by `user.h` which are in-turn
 defined in `usys.S`.

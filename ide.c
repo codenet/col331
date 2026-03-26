@@ -142,11 +142,22 @@ iderw(struct buf *b)
     idestart(b);
 
   // Wait for request to finish.
-  while((b->flags & (B_VALID|B_DIRTY)) != B_VALID)
-  {
-    // Warning: If we do not call noop(), compiler generates code that does not
-    // read "b->flags" again and therefore never come out of this while loop. 
-    // "b->flags" is modified by the trap handler in ideintr().  
-    noop();
+  if(readeflags() & FL_IF) {
+    // Interrupts enabled: wait for ideintr to set B_VALID.
+    while((b->flags & (B_VALID|B_DIRTY)) != B_VALID) {
+      // Warning: If we do not call noop(), compiler generates code that does not
+      // read "b->flags" again and therefore never come out of this while loop.
+      // "b->flags" is modified by the trap handler in ideintr().
+      noop();
+    }
+  } else {
+    // Interrupts disabled: poll the disk directly since ideintr cannot fire.
+    if(!(b->flags & B_DIRTY) && idewait(1) >= 0)
+      insl(0x1f0, b->data, BSIZE/4);
+    b->flags |= B_VALID;
+    b->flags &= ~B_DIRTY;
+    idequeue = b->qnext;
+    if(idequeue != 0)
+      idestart(idequeue);
   }
 }

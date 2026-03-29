@@ -2,7 +2,7 @@
 
 Now that our APICs are initialized and set up, we can start handling interrupts.
 In this part, we handle the periodic timer interrupts that we had set in
-`lapic.c`.  The interrupt handler in `trap.c` prints a message everytime the
+`lapic.c`.  The interrupt handler in `trap.c` prints a message every time the
 timer ticks.
 
 In `main.c`, we call `sti` to enable interrupt handling on CPU. However before

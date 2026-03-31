@@ -44,7 +44,7 @@ on how an executable is stored so that we can safely give control to it. This
 format enables us to move executables from one machine to another (assuming same
 ISA etc). Our OS is just another executable.
 
-The ELF file first has a header that should starts with a magic string. This is
+The ELF file first has a header that should start with a magic string. This is
 a mechanism to check whether the executable is corrupted. If the check passes, 
 we load the program into memory by reading more disk blocks and finally jump to
 the `entry` point as mentioned in the ELF file.

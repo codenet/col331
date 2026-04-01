@@ -24,31 +24,3 @@ getcallerpcs(void *v, uint pcs[])
   for(; i < 10; i++)
     pcs[i] = 0;
 }
-
-
-// Pushcli/popcli are like cli/sti except that they are matched:
-// it takes two popcli to undo two pushcli.  Also, if interrupts
-// are off, then pushcli, popcli leaves them off.
-
-void
-pushcli(void)
-{
-  int eflags;
-
-  eflags = readeflags();
-  cli();
-  if(mycpu()->ncli == 0)
-    mycpu()->intena = eflags & FL_IF;
-  mycpu()->ncli += 1;
-}
-
-void
-popcli(void)
-{
-  if(readeflags()&FL_IF)
-    panic("popcli - interruptible");
-  if(--mycpu()->ncli < 0)
-    panic("popcli");
-  if(mycpu()->ncli == 0 && mycpu()->intena)
-    sti();
-}

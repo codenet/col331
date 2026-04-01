@@ -99,8 +99,6 @@ void            yield(void);
 
 // spinlock.c
 void            getcallerpcs(void*, uint*);
-void            pushcli(void);
-void            popcli(void);
 
 // string.c
 int             memcmp(const void*, const void*, uint);

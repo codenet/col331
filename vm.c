@@ -33,7 +33,6 @@ switchuvm(struct proc *p)
   if(p->kstack == 0)
     panic("switchuvm: no kstack");
 
-  pushcli();
   mycpu()->gdt[SEG_TSS] = SEG16(STS_T32A, &mycpu()->ts,
                                 sizeof(mycpu()->ts)-1, 0);
   mycpu()->gdt[SEG_TSS].s = 0;
@@ -43,5 +42,4 @@ switchuvm(struct proc *p)
   // forbids I/O instructions (e.g., inb and outb) from user space
   mycpu()->ts.iomb = (ushort) 0xFFFF;
   ltr(SEG_TSS << 3);
-  popcli();
 }

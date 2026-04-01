@@ -12,7 +12,7 @@ routed towards.  We ask IOAPIC to send serial port interrupts to CPU 0.
 Currently we only have a single CPU configured in `Makefile`. Later we might ask
 IOAPIC to route all the disk interrupts to CPU 1. This makes sense for IOAPIC 
 since it is shared by CPUs whereas LAPIC does not have routing functionality
-since it is per-CPU. OS may choose to not enable timer interrupts, for example,
+since it is per-CPU. OS may choose not to enable timer interrupts, for example,
 in LAPIC of some CPUs.
 
 * You can get to "QEMU monitor" by pressing `Ctrl+A C`. 

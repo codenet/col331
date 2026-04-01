@@ -18,7 +18,7 @@
 #define T_PGFLT         14      // page fault
 // #define T_RES        15      // reserved
 #define T_FPERR         16      // floating point error
-#define T_ALIGN         17      // aligment check
+#define T_ALIGN         17      // alignment check
 #define T_MCHK          18      // machine check
 #define T_SIMDERR       19      // SIMD floating point error
 

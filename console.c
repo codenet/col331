@@ -4,9 +4,7 @@
 
 #include "types.h"
 #include "defs.h"
-#include "param.h"
 #include "x86.h"
-#include "traps.h"
 #include "fs.h"
 #include "file.h"
 #include "spinlock.h"

@@ -22,7 +22,6 @@ OBJS = \
 	kalloc.o\
 	syscall.o\
 	sysfile.o\
-	exec.o\
 	sysproc.o\
 
 # Cross-compiling (e.g., on Mac OS X)
@@ -102,11 +101,14 @@ bootblock: bootasm.S bootmain.c
 	./sign.pl bootblock
 
 
-initcode: initcode.S
+initcode: initcode.S init.c usys.S printf.c
 	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
+	$(CC) $(CFLAGS) -nostdinc -I. -c init.c
+	$(CC) $(CFLAGS) -nostdinc -I. -c printf.c
+	$(CC) $(CFLAGS) -nostdinc -I. -c usys.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o init.o printf.o usys.o
 	$(OBJCOPY) -S -O binary initcode.out initcode
-	$(OBJDUMP) -S initcode.o > initcode.asm
+	$(OBJDUMP) -S initcode.out > initcode.asm
 
 kernel: $(OBJS) entry.o kernel.ld initcode
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o $(OBJS) -b binary initcode
@@ -132,7 +134,7 @@ _%: %.o $(ULIB)
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 UPROGS=\
-	_init
+
 
 mkfs: mkfs.c fs.h
 	gcc -Werror -Wall -o mkfs mkfs.c

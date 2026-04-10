@@ -31,6 +31,7 @@ exec(char *path, char **argv)
 
   if((ip = namei(path)) == 0){
     end_op();
+    kfree(offset); // FIX: Prevent memory leak
     cprintf("exec: fail\n");
     return -1;
   }
@@ -104,5 +105,6 @@ exec(char *path, char **argv)
     iunlockput(ip);
     end_op();
   }
+  kfree(offset); // FIX: Prevent memory leak on ELF load failure
   return -1;
 }

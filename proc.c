@@ -68,6 +68,8 @@ found:
   // kstack lives on a different segment
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
+    kfree(p->offset);
+    p->offset = 0;
     return 0;
   }
 

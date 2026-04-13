@@ -8,7 +8,7 @@ the CPU. These interrupt pins were labelled IRQ0 to IRQ7 for primary, and IRQ8 t
 IRQ15 for the secondary. In total, we can effectively get 15 (16 minus primary's
 pin 2) interrupt pins.
 
-By a matter of convention, timer is attached on IRQ0, keyboard on IRQ1,
+As a matter of convention, timer is attached on IRQ0, keyboard on IRQ1,
 real-time clock on IRQ8, mouse on IRQ12, IDE controller on IRQ14, etc. Some of
 these IRQs are defined in `traps.h`. However, since there were only 15 pins,
 some devices started sharing the pins which created complications in managing

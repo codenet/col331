@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <assert.h>
 
 int
 main(int argc, char *argv[])

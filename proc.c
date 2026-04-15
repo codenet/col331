@@ -311,6 +311,8 @@ wait(void)
       // If we find a ZOMBIE child, clean up its memory!
       if(p->state == ZOMBIE){
         pid = p->pid;
+        kfree(p->kstack);
+        p->kstack = 0;
         kfree(p->offset); // Free the 1MB physical block
         p->offset = 0;
         p->pid = 0;

@@ -7,7 +7,7 @@ To realize this, we add a new process state called `SLEEPING` so that scheduler
 can skip scheduling `SLEEPING` processes. In xv6, processes sleep on "channels".
 Processes can call `sleep(chan)` to sleep on a channel `chan`.  At some later
 stage, `wakeup(chan)` can wakeup all processes sleeping on `chan`. Waking up a
-process just means setting its state to `RUNNABLE`.  Whenever, the scheduler is
+process just means setting its state to `RUNNABLE`.  Whenever  the scheduler is
 invoked next, these processes can now get scheduled.
 
 For example, the sleep system call implementation (`sys_sleep`) calls

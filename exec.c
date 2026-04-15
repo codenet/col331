@@ -97,6 +97,7 @@ exec(char *path, char **argv)
   // messed up, otherwise!
   kfree(curproc->offset);
   curproc->offset = offset;
+  curproc->sz = PGSIZE;
   switchuvm(curproc);
   return 0;
 

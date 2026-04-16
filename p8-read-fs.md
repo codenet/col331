@@ -16,7 +16,7 @@ been read from the disk.
 
 `fs.c` maintains a cache of inodes. In a fuller OS, some directories such as the
 root will be read again and again so we don't want to read them back from disk
-every time. When number of references to in-memory copy of inode become zero,
+every time. When the number of references to an in-memory copy of the inode becomes zero,
 they can be evicted from the cache. This number of references is not to be
 confused with `dinode.nlink` which is the number of links to this `inode` in the
 file system. Evicting an in-memory `inode` from `icache` does not delete its disk 

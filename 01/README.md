@@ -57,7 +57,7 @@ Under Linux you can disable ASLR, without using a debugger, in (at least)  two w
 ## FAQ
 * ```volatile int counter = 0```
 
-Volatile used to indicate to the compiler that a variable's value may change
+Volatile is used to indicate to the compiler that a variable's value may change
 unexpectedly.  i.e, the compiler can't assume that the value of the variable
 won't change if it is not written to.  Volatile is needed to make sure that
 compiler doesn't do any optimisations such as storing the value of counter in

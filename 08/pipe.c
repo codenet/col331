@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 		myargs[0] = strdup("echo");
 		myargs[1] = strdup("i will get printed in capital letters!!");
 		myargs[2] = NULL;           // marks end of array
-		execvp(myargs[0], myargs);  // runs word count
+		execvp(myargs[0], myargs);  // runs echo
 	} else {
 		// parent goes down this path (original process)
 		close(p[1]);

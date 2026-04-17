@@ -10,7 +10,7 @@ Note: there is also an experimental program, `disk-precise.py`.  This
 version of the simulator uses the python Decimal package for precise
 floating point computation, thus giving slightly better answers in
 some corner cases than `disk.py`. However, it has not been very
-carefully tested, so use at your own caution.
+carefully tested, so use at your own risk.
 
 Let's do a simple example first. To run the simulator and compute some basic
 seek, rotation, and transfer times, you first have to give a list of requests

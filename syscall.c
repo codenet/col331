@@ -14,15 +14,18 @@
 // to a saved program counter, and then the first argument.
 
 // Fetch the int at addr from the current process.
+// Under paging, p->pgdir is loaded in CR3 during syscall handling, so
+// kernel can dereference user virts directly (they're PTE_U, kernel-readable).
+// The bound check is now against the process's mapped size, not the old
+// segmentation fixed-offset window.
 int
 fetchint(uint addr, int *ip)
 {
   struct proc *curproc = myproc();
 
-  if(addr >= PGSIZE - KSTACKSIZE || addr+4 > PGSIZE - KSTACKSIZE) {
+  if(addr >= curproc->sz || addr+4 > curproc->sz)
     return -1;
-  }
-  *ip = *(int*)(addr + curproc->offset);
+  *ip = *(int*)(addr);
   return 0;
 }
 
@@ -35,10 +38,10 @@ fetchstr(uint addr, char **pp)
   char *s, *ep;
   struct proc *curproc = myproc();
 
-  if(addr >= PGSIZE - KSTACKSIZE)
+  if(addr >= curproc->sz)
     return -1;
-  *pp = (char*)(addr + curproc->offset);
-  ep = (char*)(PGSIZE - KSTACKSIZE + curproc->offset);
+  *pp = (char*)addr;
+  ep = (char*)curproc->sz;
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -64,11 +67,9 @@ argptr(int n, char **pp, int size)
 
   if(argint(n, &i) < 0)
     return -1;
-  if((uint)i >= PGSIZE - KSTACKSIZE || (uint)i+size > PGSIZE - KSTACKSIZE)
+  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
     return -1;
-    
-  // You must add curproc->offset here so it reads the correct memory!
-  *pp = (char*)(i + curproc->offset); 
+  *pp = (char*)i;
   return 0;
 }
 

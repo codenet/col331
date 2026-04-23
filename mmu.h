@@ -6,6 +6,10 @@
 
 // Control Register flags
 #define CR0_PE          0x00000001      // Protection Enable
+#define CR0_WP          0x00010000      // Write Protect
+#define CR0_PG          0x80000000      // Paging
+
+#define CR4_PSE         0x00000010      // Page size extension
 
 // various segment selectors.
 #define SEG_KCODE 1  // kernel code
@@ -61,7 +65,7 @@ struct segdesc {
 #define STS_IG32    0xE     // 32-bit Interrupt Gate
 #define STS_TG32    0xF     // 32-bit Trap Gate
 
-#define PGSIZE          (PROCSIZE << 12)    // bytes mapped by a page. This is kept same as PROCSIZE so that the process can be contiguously allocated.
+#define PGSIZE          4096                // bytes mapped by a page
 
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 
@@ -142,4 +146,36 @@ struct gatedesc {
   (gate).off_31_16 = (uint)(off) >> 16;                  \
 }
 
+#endif
+
+// Page directory and page table constants.
+#define NPDENTRIES      1024    // # directory entries per page directory
+#define NPTENTRIES      1024    // # PTEs per page table
+
+#define PTXSHIFT        12      // offset of PTX in a linear address
+#define PDXSHIFT        22      // offset of PDX in a linear address
+
+// page directory index
+#define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF)
+
+// page table index
+#define PTX(va)         (((uint)(va) >> PTXSHIFT) & 0x3FF)
+
+// construct virtual address from indexes and offset
+#define PGADDR(d, t, o) ((uint)((d) << PDXSHIFT | (t) << PTXSHIFT | (o)))
+
+#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
+
+// Page table/directory entry flags.
+#define PTE_P           0x001   // Present
+#define PTE_W           0x002   // Writeable
+#define PTE_U           0x004   // User
+#define PTE_PS          0x080   // Page Size
+
+// Address in page table or page directory entry
+#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
+#define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
+
+#ifndef __ASSEMBLER__
+typedef uint pte_t;
 #endif

@@ -20,10 +20,23 @@ struct {
   struct run *freelist;
 } kmem;
 
+// Initialization happens in two phases.
+// 1. main() calls kinit1() while still using entrypgdir, to place just
+//    the pages mapped by entrypgdir on the free list.
+// 2. main() calls kinit2() after kvmalloc() has installed kpgdir and
+//    switched to it, to place the remaining pages on the free list.
+// The existing pushcli/popcli in kfree/kalloc is already safe before
+// locks are initialized, so no use_lock flag is needed in this variant.
 void
-kinit(void *vstart, void *vend)
+kinit1(void *vstart, void *vend)
 {
-  freerange(vstart, vend);      // (freerange calls kfree, so the lock must exist!)
+  freerange(vstart, vend);
+}
+
+void
+kinit2(void *vstart, void *vend)
+{
+  freerange(vstart, vend);
 }
 
 void

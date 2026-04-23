@@ -127,6 +127,12 @@ rcr2(void)
 }
 
 static inline void
+lcr3(uint val)
+{
+  asm volatile("movl %0,%%cr3" : : "r" (val));
+}
+
+static inline void
 noop(void)
 {
   asm volatile("nop");

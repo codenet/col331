@@ -7,36 +7,33 @@
 #include "x86.h"
 #include "elf.h"
 
+// mmu.h's PGSIZE is 1MB (segmentation process-slot size on this variant).
+// exec's ELF loading, stack allocation, and PGROUNDUP all need to use
+// the hardware 4KB page size for paging to work correctly.
+#undef PGSIZE
+#define PGSIZE 4096
+
 int
 exec(char *path, char **argv)
 {
   char *s, *last;
   int i, off;
-  uint argc;
+  uint argc, sz, sp, ustack[3+MAXARG+1];
   struct elfhdr elf;
   struct inode *ip;
-  struct proc *curproc = myproc();
   struct proghdr ph;
-  uint sz = 0;
-  char *offset;
-  uint usp, ustack[3*MAXARG + 1];
+  pde_t *pgdir, *oldpgdir;
+  struct proc *curproc = myproc();
 
-  // Prepare new address space 
-  if((offset = kalloc()) == 0){
-    return -1;
-  }
-  memset(offset, 0, PGSIZE);
-
-  // read path
   begin_op();
 
   if((ip = namei(path)) == 0){
     end_op();
-    kfree(offset); // FIX: Prevent memory leak
     cprintf("exec: fail\n");
     return -1;
   }
   ilock(ip);
+  pgdir = 0;
 
   // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
@@ -44,7 +41,11 @@ exec(char *path, char **argv)
   if(elf.magic != ELF_MAGIC)
     goto bad;
 
+  if((pgdir = setupkvm()) == 0)
+    goto bad;
+
   // Load program into memory.
+  sz = 0;
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
@@ -54,18 +55,44 @@ exec(char *path, char **argv)
       goto bad;
     if(ph.vaddr + ph.memsz < ph.vaddr)
       goto bad;
+    if((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == 0)
+      goto bad;
     if(ph.vaddr % PGSIZE != 0)
       goto bad;
-    if(ph.vaddr + ph.memsz > PGSIZE - KSTACKSIZE)
+    if(loaduvm(pgdir, (char*)ph.vaddr, ip, ph.off, ph.filesz) < 0)
       goto bad;
-    if(readi(ip, (char*)(offset + ph.vaddr), ph.off, ph.filesz) != ph.filesz)
-      goto bad;
-    if(ph.vaddr + ph.memsz > sz)
-      sz = ph.vaddr + ph.memsz;
   }
   iunlockput(ip);
   end_op();
   ip = 0;
+
+  // Allocate two pages at the next page boundary.
+  // Make the first inaccessible (stack guard).  Use the second as the
+  // user stack.
+  sz = PGROUNDUP(sz);
+  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
+    goto bad;
+  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+  sp = sz;
+
+  // Push argument strings, prepare rest of stack in ustack.
+  for(argc = 0; argv[argc]; argc++) {
+    if(argc >= MAXARG)
+      goto bad;
+    sp = (sp - (strlen(argv[argc]) + 1)) & ~3;
+    if(copyout(pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0)
+      goto bad;
+    ustack[3+argc] = sp;
+  }
+  ustack[3+argc] = 0;
+
+  ustack[0] = 0xffffffff;  // fake return PC
+  ustack[1] = argc;
+  ustack[2] = sp - (argc+1)*4;  // argv pointer
+
+  sp -= (3+argc+1) * 4;
+  if(copyout(pgdir, sp, ustack, (3+argc+1)*4) < 0)
+    goto bad;
 
   // Save program name for debugging.
   for(last=s=path; *s; s++)
@@ -73,42 +100,22 @@ exec(char *path, char **argv)
       last = s+1;
   safestrcpy(curproc->name, last, sizeof(curproc->name));
 
-  // Push argument strings, prepare rest of stack in ustack.
-  usp = PGSIZE - KSTACKSIZE;
-  for(argc = 0; argv[argc]; argc++) {
-    if(argc >= MAXARG)
-      goto bad;
-    usp = usp - (strlen(argv[argc]) + 1);
-    // cprintf("%s\n", argv[argc]);
-    memmove((uint*)(usp + offset), argv[argc], strlen(argv[argc]) + 1);
-    ustack[3+argc] = usp;  // Add pointer to the string on the stack
-  }
-  // cprintf("%d\n", argc);
-  ustack[3+argc] = 0;
-
-  ustack[0] = 0xffffffff;  // fake return PC
-  ustack[1] = argc;
-  ustack[2] = (usp - (argc+1)*4);  // argv pointer
-  usp -= (3+argc+1)*4;
-  memmove(usp + offset, ustack, (3+argc+1)*4);
-
-  curproc->tf->eip = elf.entry;  // main
-  curproc->tf->esp = usp;
-
-  // We free the old address space. It does not contain the kernel stack! kfree
-  // writes 1s to the entire PGSIZE. All the return addresses etc will get
-  // messed up, otherwise!
-  kfree(curproc->offset);
+  // Commit to the user image.
+  oldpgdir = curproc->pgdir;
+  curproc->pgdir = pgdir;
   curproc->sz = sz;
-  curproc->offset = offset;
+  curproc->tf->eip = elf.entry;  // main
+  curproc->tf->esp = sp;
   switchuvm(curproc);
+  freevm(oldpgdir);
   return 0;
 
  bad:
+  if(pgdir)
+    freevm(pgdir);
   if(ip){
     iunlockput(ip);
     end_op();
   }
-  kfree(offset); // FIX: Prevent memory leak on ELF load failure
   return -1;
 }

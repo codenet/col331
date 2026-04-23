@@ -9,8 +9,11 @@ SECTIONS
 {
 	/* Link the kernel at this address: "." means the current address */
 	/* Must be equal to KERNLINK */
-	. = 0x00100000;
+	. = 0x80100000;
 
+	/* AT(0x100000) tells the bootloader to load the code into
+	 * physical memory at 0x100000, even though the linker assigns
+	 * high-half virtual addresses. */
 	.text : AT(0x100000) {
 		*(.text .stub .text.* .gnu.linkonce.t.*)
 	}

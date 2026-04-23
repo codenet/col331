@@ -68,16 +68,15 @@ found:
   }
   p->sz = 0;
 
-  // kstack lives on a different segment
+  // kstack is its own kalloc'd page. Leave p->kstack as the base of the
+  // kalloc'd chunk so kfree(p->kstack) passes kalloc.c's alignment check.
+  // We use only the first KSTACKSIZE bytes of the 1MB chunk as the kernel
+  // stack; the rest is wasted but the chunk boundary remains aligned.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
     return 0;
   }
-
-  sp = (char*)(p->kstack + PGSIZE);
-
-  // Allocate kernel stack.
-  p->kstack = sp - KSTACKSIZE;
+  sp = p->kstack + KSTACKSIZE;
 
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
@@ -107,11 +106,18 @@ pinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
+  // SHADOW PAGING: Build the initial page directory for initproc.
+  p->pgdir = setupkvm();
+  inituvm(p->pgdir, _binary_initcode_start, (uint)_binary_initcode_size);
+
   initproc = p;
 
   memmove(p->offset, _binary_initcode_start, (int)_binary_initcode_size);
-  p->sz = (uint)_binary_initcode_size;
+  // p->sz is the size of the user address space, not just the initcode bytes.
+  // The stack sits at the top of the single page inituvm mapped, so syscall
+  // arg-validation (argint/argptr) must accept addresses up to 4096.
+  p->sz = 4096;
   memset(p->tf, 0, sizeof(*p->tf));
 
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
@@ -120,7 +126,9 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE - KSTACKSIZE;
+  // User stack sits at the top of the single page inituvm mapped at virt 0.
+  // Hardcoded to 4096 because mmu.h's PGSIZE here is 1MB (segmentation).
+  p->tf->esp = 4096;
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -204,6 +212,14 @@ fork(void)
 
   // 1. Allocate a new process from the process table
   if((np = allocproc()) == 0){
+    return -1;
+  }
+
+  // SHADOW PAGING: Clone the parent's page directory.
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
     return -1;
   }
 
@@ -314,6 +330,11 @@ wait(void)
         pid = p->pid;
         kfree(p->offset); // Free the 1MB physical block
         p->offset = 0;
+        kfree(p->kstack); // Free the kernel stack chunk
+        p->kstack = 0;
+        // SHADOW PAGING: Free the page directory.
+        freevm(p->pgdir);
+        p->pgdir = 0;
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;

@@ -75,7 +75,8 @@ void            ioapicinit(void);
 // kalloc.c
 char*           kalloc(void);
 void            kfree(char*);
-void            kinit(void*, void*);
+void            kinit1(void*, void*);
+void            kinit2(void*, void*);
 
 // lapic.c
 int             lapicid(void);
@@ -160,6 +161,18 @@ void            uartputc(int);
 // vm.c
 void            seginit(void);
 void            switchuvm(struct proc*);
+pde_t*          setupkvm(void);
+void            kvmalloc(void);
+void            switchkvm(void);
+void            inituvm(pde_t*, char*, uint);
+int             allocuvm(pde_t*, uint, uint);
+int             deallocuvm(pde_t*, uint, uint);
+void            freevm(pde_t*);
+pde_t*          copyuvm(pde_t*, uint);
+int             loaduvm(pde_t*, char*, struct inode*, uint, uint);
+void            clearpteu(pde_t*, char*);
+char*           uva2ka(pde_t*, char*);
+int             copyout(pde_t*, uint, void*, uint);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

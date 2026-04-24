@@ -16,5 +16,5 @@ sleep lock is acquired, its `locked` flag is simply set to `1`; release sets it
 to `0`. While acquiring, if we find that the `locked` flag is already set, the
 process just sleeps on the lock. It gets woken up when the sleep lock is released.
 
-`bio.c` acquires the buffer's sleep lock in `bget` and release it in `brelse`.
+`bio.c` acquires the buffer's sleep lock in `bget` and releases it in `brelse`.
 Similarly, inodes are synchronized using sleep locks.

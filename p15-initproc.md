@@ -57,7 +57,7 @@ its code segment selector base set as `STARTPROC`.
 
 Virtualizing memory only partly solves the isolation problem. What stops a
 process from calling instructions like `lgdt` and `lidt` to take control of the
-memory segments and the interrupts. If a process wants to illegally overwrite OS
+memory segments and the interrupts? If a process wants to illegally overwrite OS
 code, it can setup its own GDT by calling `lgdt` like in `seginit` in `vm.c` to
 give itself permission to access other parts of memory.
 

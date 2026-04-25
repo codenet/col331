@@ -32,6 +32,11 @@ kill the process upon seeing a general protection fault. Explicitly setting DPL
 in IDT is a protection mechanism so that processes cannot pretend to be hardware
 devices and call `int` instruction with their trap vectors.
 
+At this stage, `tvinit` declares the system call as an interrupt gate, so the
+hardware disables interrupts while handling system calls. This keeps things
+simple for now; we will change this to a trap gate in p21 when we introduce
+proper synchronization to handle the resulting concurrency.
+
 Trap handler in `trap.c` hands over to `syscall` which reads process' `eax`
 register from the trapframe to figure out which system call is the process
 making. It maintains a list of system call handlers as function pointers in its

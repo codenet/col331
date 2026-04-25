@@ -22,7 +22,7 @@ static void wakeup1(void *chan);
 
 int
 cpuid() {
-  return 0;
+  return lapicid();
 }
 
 // Must be called with interrupts disabled to avoid the caller being
@@ -30,14 +30,35 @@ cpuid() {
 struct cpu*
 mycpu(void)
 {
-  return &cpus[0];
+  int apicid, i;
+
+  if(readeflags()&FL_IF)
+    panic("mycpu called with interrupts enabled\n");
+
+  apicid = lapicid();
+
+  if (ncpu == 0) {
+    return &cpus[0];
+  }
+
+  for (i = 0; i < ncpu; ++i) {
+    if (cpus[i].apicid == apicid)
+      return &cpus[i];
+  }
+
+  panic("unknown apicid\n");
 }
 
 // Read proc from the cpu structure
 struct proc*
 myproc(void) {
-  struct cpu *c = mycpu();
-  return c->proc;
+  struct cpu *c;
+  struct proc *p;
+  pushcli();
+  c = mycpu();
+  p = c->proc;
+  popcli();
+  return p;
 }
 
 // Look in the process table for an UNUSED proc.
@@ -138,13 +159,15 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct cpu *c = mycpu();
-  c->proc = 0;
-  
+  struct cpu *c;
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
     pushcli();
+    // Fetch cpu pointer with interrupts disabled (mycpu requires it).
+    c = mycpu();
+    c->proc = 0;
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -316,6 +339,7 @@ wait(void)
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
+        p->killed = 0; // Reset killed state for the next process to reuse this slot
         p->state = UNUSED;
         popcli();
         return pid;

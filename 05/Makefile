@@ -1,7 +1,7 @@
 all: io fsync
 
 clean:
-	rm -f io
+	rm -f io fsync
 
 io: io.c common.h
 	gcc -o io io.c -Wall

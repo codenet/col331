@@ -1,5 +1,4 @@
 struct buf;
-struct rtcdate;
 struct superblock;
 struct inode;
 struct stat;
@@ -21,7 +20,6 @@ void            consputc(int);
 struct file*    filealloc(void);
 void            fileclose(struct file*);
 struct file*    filedup(struct file*);
-void            fileinit(void);
 int             fileread(struct file*, char*, int n);
 int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
@@ -58,12 +56,10 @@ extern uchar    ioapicid;
 void            ioapicinit(void);
 
 // lapic.c
-void            cmostime(struct rtcdate *r);
 int             lapicid(void);
 extern volatile uint*    lapic;
 void            lapiceoi(void);
 void            lapicinit(void);
-void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
@@ -77,7 +73,6 @@ extern int      ismp;
 void            mpinit(void);
 
 // picirq.c
-void            picenable(int);
 void            picinit(void);
 
 // proc.c

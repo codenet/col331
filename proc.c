@@ -5,10 +5,8 @@
 #include "mmu.h"
 #include "x86.h"
 #include "proc.h"
-#include "spinlock.h"
 
 struct {
-  struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
 
@@ -47,17 +45,17 @@ allocproc(void)
   struct proc *p;
   char *sp;
 
-  acquire(&ptable.lock);
+  pushcli();
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-  release(&ptable.lock);
+  popcli();
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  release(&ptable.lock);
+  popcli();
 
   if((p->offset = kalloc()) == 0){
     p->state = UNUSED;
@@ -99,7 +97,6 @@ found:
 void
 pinit(void)
 {
-  initlock(&ptable.lock, "ptable");
   
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
@@ -142,8 +139,7 @@ scheduler(void)
   for(;;){
     // Enable interrupts on this processor.
     sti();
-
-    acquire(&ptable.lock);
+    pushcli();
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -156,7 +152,7 @@ scheduler(void)
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
     }
-    release(&ptable.lock);
+    popcli();
   }
 }
 
@@ -187,17 +183,17 @@ sched(void)
 void
 yield(void)
 {
-  acquire(&ptable.lock);
+  pushcli();
   myproc()->state = RUNNABLE;
   sched();
-  release(&ptable.lock);
+  popcli();
 }
 
 void
 forkret(void)
 {
   // Release the lock held by the scheduler
-  release(&ptable.lock);
+  popcli();
 }
 
 void
@@ -211,7 +207,7 @@ procdump(void)
   };
   struct proc *p;
   char *state;
-  acquire(&ptable.lock);
+  pushcli();
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -222,5 +218,5 @@ procdump(void)
     cprintf("%d %s %s", p->pid, state, p->name);
     cprintf("\n");
   }
-  release(&ptable.lock);
+  popcli();
 }

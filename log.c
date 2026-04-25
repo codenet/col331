@@ -28,7 +28,7 @@
 // Log appends are synchronous.
 
 // Contents of the header block, used for both the on-disk header block
-// and to keep track in memory of logged block# before commit.
+// and for keeping track of logged block numbers in memory before commit.
 struct logheader {
   int n;
   int block[LOGSIZE];

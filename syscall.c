@@ -66,7 +66,7 @@ argptr(int n, char **pp, int size)
     return -1;
   if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
     return -1;
-  *pp = (char*)i;
+  *pp = (char*)(curproc->offset + i);
   return 0;
 }
 

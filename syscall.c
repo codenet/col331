@@ -66,9 +66,7 @@ argptr(int n, char **pp, int size)
     return -1;
   if((uint)i >= PGSIZE - KSTACKSIZE || (uint)i+size > PGSIZE - KSTACKSIZE)
     return -1;
-    
-  // You must add curproc->offset here so it reads the correct memory!
-  *pp = (char*)(i + curproc->offset); 
+  *pp = (char*)(curproc->offset + i);
   return 0;
 }
 

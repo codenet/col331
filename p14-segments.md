@@ -63,7 +63,7 @@ little-endian.
 1. 2 least significant bytes represent two least significant bytes of limit:
 `0xffff`.
 2. Base address is split across the descriptor. Patching them together, we get
-based address of the segment as `0x00000000`.
+base address of the segment as `0x00000000`.
 3. The remaining thing is `0x9a 0xcf`. From this, we get:
 0xa
 * Type: 1010. From Table 3.1, means that this is a code segment which can be read

@@ -42,7 +42,7 @@ cprintf(char *fmt, ...)
   uint *argp;
   char *s;
 
-  pushcli();     
+  pushcli();
   if (fmt == 0)
     panic("null fmt");
 
@@ -79,7 +79,7 @@ cprintf(char *fmt, ...)
       break;
     }
   }
-  popcli(); 
+  popcli();
 }
 
 void

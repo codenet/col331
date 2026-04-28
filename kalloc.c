@@ -23,7 +23,7 @@ struct {
 void
 kinit(void *vstart, void *vend)
 {
-  freerange(vstart, vend);      // (freerange calls kfree, so the lock must exist!)
+  freerange(vstart, vend);
 }
 
 void

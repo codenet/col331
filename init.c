@@ -8,7 +8,7 @@ int
 main(void)
 {
   int fd = open("console", O_RDWR);
-	int t = uptime();
+  int t = uptime();
   printf(fd, "Hello from init.c. It's %d ticks since start.\n", t);
   close(fd);
 

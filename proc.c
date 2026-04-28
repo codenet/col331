@@ -61,15 +61,9 @@ found:
     p->state = UNUSED;
     return 0;
   }
-  p->sz = PGSIZE;
+  p->sz = PGSIZE - KSTACKSIZE;
 
-  // kstack lives on a different segment
-  if((p->kstack = kalloc()) == 0){
-    p->state = UNUSED;
-    return 0;
-  }
-
-  sp = (char*)(p->kstack + PGSIZE);
+  sp = (char*)(p->offset + PGSIZE);
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;
@@ -86,7 +80,6 @@ found:
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  // p->context->eip = (uint)trapret;
   
   p->context->eip = (uint)forkret;
 
@@ -114,7 +107,7 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE;
+  p->tf->esp = PGSIZE - KSTACKSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));

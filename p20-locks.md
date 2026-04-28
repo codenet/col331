@@ -24,13 +24,12 @@ keyboard interrupt handling. Interrupts get re-enabled when `iret` recovers
 bit inside the `eflags` register).
 
 However when processes make system calls, `tvinit` is changed in this branch to
-ask the hardware to *not* disable interrupts upon receiving a system call by
-declaring it a "trap gate". This is important to maintain responsiveness of the
-OS. A malicious process can give a lot of work to the OS via system calls. If
-the hardware disabled interrupts during syscall handling, the process will be
-able to exceed its time quanta and make the OS unresponsive to keyboard etc.
-Because of this, we now have concurrency in the system which can lead to
-***data races***.
+ask the hardware to *not* disable interrupts by declaring system calls as "trap
+gate". This is important to maintain responsiveness of the OS. A malicious
+process can give a lot of work to the OS via system calls. If the hardware
+disabled interrupts during syscall handling, the process will be able to exceed
+its time quanta and make the OS unresponsive to keyboard etc.  Because of this,
+we now have concurrency in the system which can lead to ***data races***.
 
 Consider a user process P1 that makes a `read` system call which tries to read a
 disk block into an empty buffer from the buffer cache:

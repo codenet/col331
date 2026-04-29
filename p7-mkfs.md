@@ -1,6 +1,6 @@
 ## File system
 
-File system is a basically an on-disk linked data structure (tree) with
+The file system is basically an on-disk linked data structure (tree) with
 directories pointing to other directories and files. We need to define how the
 file contents and pointers are managed over disk blocks to define our file
 system.
@@ -30,7 +30,7 @@ This is the `struct superblock`:
 (25) + number of bitmap blocks (2) = total number of blocks (1000). 
 
 Bitmap blocks spend 1 bit to keep track of free data blocks. For 1000 total
-blocks, we need 1000 bits, i.e, 125 bytes. This can be represented in just 1 512
+blocks, we need 1000 bits, i.e., 125 bytes. This can be represented in just 1 512
 byte block. But `mkfs.c` sets `nbitmap` to 2.
 
 So we get 971 data blocks. Data blocks start at block number 29, after free bit

@@ -6,7 +6,7 @@ need mutual exclusion across *large critical sections*.
 
 Consider `bio.c`. We want to synchronize accesses to buffers from multiple
 processes; only a single process shall be able to read/write a given buffer at a
-time. Critical sections in `bio.h` are long: a process can hold a buffer for a
+time. Critical sections in `bio.c` are long: a process can hold a buffer for a
 long time and reading/writing a buffer can sleep in `ide.c`.  Therefore, it does
 not make sense to disable interrupts for the long time during which a process is
 working with a buffer.

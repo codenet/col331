@@ -23,7 +23,6 @@
 
 // idequeue points to the buf now being read/written to the disk.
 // idequeue->qnext points to the next buf to be processed.
-// You must hold idelock while manipulating queue.
 
 static struct buf *idequeue;
 
@@ -47,7 +46,7 @@ ideinit(void)
 {
   int i;
 
-  // initlock(&idelock, "ide");
+
   ioapicenable(IRQ_IDE, ncpu - 1);
   idewait(0);
 
@@ -64,7 +63,6 @@ ideinit(void)
   outb(0x1f6, 0xe0 | (0<<4));
 }
 
-// Start the request for b.  Caller must hold idelock.
 static void
 idestart(struct buf *b)
 {

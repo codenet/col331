@@ -13,10 +13,10 @@ welcome(void) {
   struct inode* root = iget(ROOTDEV, ROOTINO);
   iread(root);
 
-	struct dirent entries[4];
+	struct dirent entries[3];
   int n = readi(root, (char *) entries, 0, sizeof(entries));
   cprintf("Read %d bytes from inode of root directory\n", n);
-  for(int i = 0; i < 4; i ++) {
+  for(int i = 0; i < 3; i ++) {
     cprintf("name: %s is at inum: %d\n", entries[i].name, entries[i].inum);
   }
 

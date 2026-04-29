@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 #include <assert.h>
 #include <sys/wait.h>
 
@@ -15,14 +16,22 @@ main(int argc, char *argv[])
 		fprintf(stderr, "fork failed\n");
 		exit(1);
 	} else if (rc == 0) {
-		// child (new process)
+		// child: redirect standard output to a file
+		close(STDOUT_FILENO); 
+		open("./p5.output", O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
+
+		// redirect standard error to standard output
+		close(STDERR_FILENO); 
+		dup(STDOUT_FILENO);
+
 		printf("hello, I am child (pid:%d)\n", (int) getpid());
-		// now exec "wc"...
-		char *myargs[3];
-		myargs[0] = strdup("wc");   // program: "wc" (word count)
-		myargs[1] = strdup("p3.c"); // argument: file to count
-		myargs[2] = NULL;           // marks end of array
-		execvp(myargs[0], myargs);  // runs word count
+		// now exec "ls"...
+		char *myargs[4];
+		myargs[0] = strdup("ls");   // program: "ls"
+		myargs[1] = strdup("p5.c"); // argument: a file that exists
+		myargs[2] = strdup("p5.xyz"); // argument: a random file that does not exist
+		myargs[3] = NULL;           // marks end of array
+		execvp(myargs[0], myargs);  // runs ls
 		printf("this shouldn't print out");
 	} else {
 		// parent goes down this path (original process)

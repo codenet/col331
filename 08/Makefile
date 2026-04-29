@@ -1,4 +1,4 @@
-all: p1 p2 p3 p4 fork-cow fork-fd fork-fd2 pipe dup nodup
+all: p1 p2 p3 p4 p5 fork-cow fork-fd fork-fd2 pipe dup nodup
 
 clean:
-	rm p1 p2 p3 p4 fork-cow fork-fd fork-fd2 pipe dup nodup
+	rm p1 p2 p3 p4 p5 fork-cow fork-fd fork-fd2 pipe dup nodup

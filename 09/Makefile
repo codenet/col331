@@ -1,9 +1,9 @@
-CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pie -O2
+CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pie -O3
 
-all: threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
+all: threads-safe peterson-breaks peterson-fence atomic wait-attempt1 wait-attempt2 wait mypipe alloc-attempt1 alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
 
 clean:
-	rm threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
+	rm threads-safe peterson-breaks peterson-fence atomic wait-attempt1 wait-attempt2 wait mypipe alloc-attempt1 alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
 
 threads-safe: threads-safe.c common.h common_threads.h
 	gcc $(CFLAGS) -o threads-safe threads-safe.c -Wall -pthread
@@ -20,6 +20,12 @@ atomic: atomic.c common.h common_threads.h
 	gcc $(CFLAGS) -S atomic.c -Wall -pthread
 	gcc $(CFLAGS) -o atomic atomic.c -Wall -pthread
 
+wait-attempt1: wait-attempt1.c common.h common_threads.h
+	gcc $(CFLAGS) -o wait-attempt1 wait-attempt1.c -Wall -pthread
+
+wait-attempt2: wait-attempt2.c common.h common_threads.h
+	gcc $(CFLAGS) -o wait-attempt2 wait-attempt2.c -Wall -pthread
+
 wait: wait.c common.h common_threads.h
 	gcc $(CFLAGS) -o wait wait.c -Wall -pthread
 
@@ -28,6 +34,9 @@ mypipe: mypipe.c common.h common_threads.h
 
 alloc: alloc.c common.h common_threads.h
 	gcc $(CFLAGS) -o alloc alloc.c -Wall -pthread
+
+alloc-attempt1: alloc-attempt1.c common.h common_threads.h
+	gcc $(CFLAGS) -o alloc-attempt1 alloc-attempt1.c -Wall -pthread
 
 semlock: semlock.c common.h common_threads.h
 	gcc $(CFLAGS) -o semlock semlock.c -Wall -pthread

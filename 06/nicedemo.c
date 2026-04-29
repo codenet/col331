@@ -9,7 +9,7 @@
 #include<limits.h>
 int main(void) {
 	unsigned int i = 0;
-	while(i < UINT_MAX) {i++;}   
+	while(i < UINT_MAX) {i++;}
 	i=0;
-	while(i < UINT_MAX) {i++;}   
+	while(i < UINT_MAX) {i++;}
 }

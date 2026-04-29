@@ -18,9 +18,9 @@ main(int argc, char *argv[])
 	} else if (rc == 0) {
 		// child: redirect standard output to a file
 		close(STDOUT_FILENO); 
-		open("./p4.output", O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
+		int fd = open("./p4.output", O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
 
-		printf("hello, I am child (pid:%d)\n", (int) getpid());
+		printf("hello, I am child (pid:%d) with fd=%d\n", (int) getpid(), fd);
 		// now exec "wc"...
 		char *myargs[3];
 		myargs[0] = strdup("wc");   // program: "wc" (word count)

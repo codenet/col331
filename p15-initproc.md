@@ -76,7 +76,7 @@ initializes segment registers' last two bits with `DPL_USER`(= 3). `vm.c` also s
 segment descriptor entries to `DPL_USER`.
 
 With all this, hardware prevents a user program running at privilege level=3
-switch its code segment to privilege level=0.  User programs are also *not
+from switching its code segment to privilege level=0.  User programs are also *not
 allowed* to change GDT, IDT, etc. as they are *privileged instructions* (list of
 privileged instructions is given in Section 5.9 Intel SDM Volume 3A). If a user
 program tries to run these instructions a general protection fault is raised by

@@ -83,3 +83,14 @@ Now, we read the data blocks for `welcome.txt` at data block = 30.
 ```
 
 We see that spaces, dots, and hash signs are in the data block of the file!
+
+## Build note 
+
+On some systems, plain `make qemu` may fail with:
+- `/bin/sh: 1: [[: not found`
+- `array subscript ... is outside array bounds` in `mp.c`
+
+If that happens, run:
+
+```bash
+make qemu SHELL=/bin/bash MAC_CCFLAGS='-Wno-error=array-bounds -Wno-error=infinite-recursion'

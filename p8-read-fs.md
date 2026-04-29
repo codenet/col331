@@ -27,7 +27,7 @@ the file system by reading the super block.
 
 `fs.c` additionally implements the following methods:
 
-* `iget` first looks up the inode in cache and return a new inode if it is
+* `iget` first looks up the inode in cache and returns a new inode if it is
 not found.
 * `iread` reads the inode from disk if it isn't already read.
 * `stati` reads the header of `inode`.

@@ -11,7 +11,7 @@ finally print it.
 `struct inode` is defined in `file.h`. It contains everything that the disk 
 version of inode `struct dinode` contains. In addition, it also contains the 
 device number (for managing multiple disks), the inode number, number of
-references to this in-memory `inode` struct, and if it is valid i.e, if it has
+references to this in-memory `inode` struct, and if it is valid i.e., if it has
 been read from the disk.
 
 `fs.c` maintains a cache of inodes. In a fuller OS, some directories such as the

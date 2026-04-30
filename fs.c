@@ -16,7 +16,6 @@
 #include "fs.h"
 #include "buf.h"
 #include "file.h"
-#include "spinlock.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
@@ -29,7 +28,6 @@ void
 readsb(int dev, struct superblock *sb)
 {
   struct buf *bp;
-
   bp = bread(dev, 1);
   memmove(sb, bp->data, sizeof(*sb));
   brelse(bp);
@@ -40,7 +38,6 @@ static void
 bzero(int dev, int bno)
 {
   struct buf *bp;
-
   bp = bread(dev, bno);
   memset(bp->data, 0, BSIZE);
   log_write(bp);
@@ -109,14 +106,12 @@ bfree(int dev, uint b)
 //
 
 struct {
-  struct spinlock lock; 
   struct inode inode[NINODE];
 } icache;
 
 void
 iinit(int dev)
 {
-  initlock(&icache.lock, "icache");
   readsb(dev, &sb);
   cprintf("sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
  inodestart %d bmap start %d\n", sb.size, sb.nblocks,
@@ -157,25 +152,21 @@ ialloc(uint dev, short type)
 void
 iput(struct inode *ip)
 {
-  acquire(&icache.lock);
-  
+  pushcli();
   if(ip->valid && ip->nlink == 0){
     int r = ip->ref;
     if(r == 1){
       // inode has no links and no other references: truncate and free.
-      release(&icache.lock);
-      
+      popcli();
       itrunc(ip);
       ip->type = 0;
       iupdate(ip);
       ip->valid = 0;
-      
-      acquire(&icache.lock);
+      pushcli();
     }
   }
-  
   ip->ref--;
-  release(&icache.lock); // (Final release)
+  popcli();
 }
 
 // Copy a modified in-memory inode to disk.
@@ -206,15 +197,13 @@ struct inode*
 iget(uint dev, uint inum)
 {
   struct inode *ip, *empty;
-
-  acquire(&icache.lock);
-
+  pushcli();
   // Is the inode already cached?
   empty = 0;
   for(ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++){
     if(ip->ref > 0 && ip->dev == dev && ip->inum == inum){
       ip->ref++;
-      release(&icache.lock);
+      popcli();
       return ip;
     }
     if(empty == 0 && ip->ref == 0)    // Remember empty slot.
@@ -230,9 +219,7 @@ iget(uint dev, uint inum)
   ip->inum = inum;
   ip->ref = 1;
   ip->valid = 0;
-
-  release(&icache.lock);
-
+  popcli();
   return ip;
 }
 
@@ -297,7 +284,6 @@ bmap(struct inode *ip, uint bn)
     brelse(bp);
     return addr;
   }
-
   panic("bmap: out of range");
 }
 

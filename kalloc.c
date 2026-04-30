@@ -6,7 +6,6 @@
 #include "defs.h"
 #include "memlayout.h"
 #include "mmu.h"
-#include "spinlock.h"
 
 void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
@@ -18,15 +17,13 @@ struct run {
 
 
 struct {
-  struct spinlock lock; 
   struct run *freelist;
 } kmem;
 
 void
 kinit(void *vstart, void *vend)
 {
-  initlock(&kmem.lock, "kmem"); 
-  freerange(vstart, vend);      // (freerange calls kfree, so the lock must exist!)
+  freerange(vstart, vend);
 }
 
 void
@@ -54,10 +51,10 @@ kfree(char *v)
   memset(v, 1, PGSIZE);
 
   r = (struct run*)v;
-  acquire(&kmem.lock);
+  pushcli();
   r->next = kmem.freelist;
   kmem.freelist = r;
-  release(&kmem.lock);
+  popcli();
 }
 
 // Allocate one PGSIZE page of physical memory.
@@ -67,12 +64,11 @@ char*
 kalloc(void)
 {
   struct run *r;
-
-  acquire(&kmem.lock);
+  pushcli();
   r = kmem.freelist;
   if(r)
     kmem.freelist = r->next;
-  release(&kmem.lock);
+  popcli();
   return (char*)r;
 }
 

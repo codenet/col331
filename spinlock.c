@@ -5,7 +5,6 @@
 #include "defs.h"
 #include "mmu.h"
 #include "proc.h"
-#include "spinlock.h"
 
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
@@ -51,30 +50,4 @@ popcli(void)
     panic("popcli");
   if(mycpu()->ncli == 0 && mycpu()->intena)
     sti();
-}
-
-
-
-void
-initlock(struct spinlock *lk, char *name)
-{
-  lk->name = name;
-  lk->locked = 0;
-}
-
-// Acquire the lock.
-// Disables interrupts to ensure no context switches happen.
-void
-acquire(struct spinlock *lk)
-{
-  pushcli();
-  lk->locked = 1;
-}
-
-// Release the lock.
-void
-release(struct spinlock *lk)
-{
-  lk->locked = 0;
-  popcli();
 }

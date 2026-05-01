@@ -55,7 +55,7 @@ hardware when the interrupt had happened.
 Why do we not call `lidt` directly in `tvinit`? Why do we have two separate
 methods?
 
-Later when we enable multi-CPU support in our OS only CPU zero will call 
+Later, when we enable multi-CPU support in our OS, only CPU zero will call
 `tvinit` to prepare the `idt` array, and then all the CPUs will call `lidt`.
 
 ## Build note 

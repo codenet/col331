@@ -33,7 +33,7 @@ trap(struct trapframe *tf)
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     ticks++;
-    cprintf("Tick! %d\n\0", ticks);
+    cprintf("Tick! %d\n", ticks);
     lapiceoi();
     break;
   case T_IRQ0 + 7:

@@ -51,8 +51,6 @@ struct segdesc {
 #define STA_W       0x2     // Writeable (non-executable segments)
 #define STA_R       0x2     // Readable (executable segments)
 
-// cpu->gdt[NSEGS] holds the above segments.
-#define NSEGS     6
 
 #define DPL_USER    0x3     // User DPL
 

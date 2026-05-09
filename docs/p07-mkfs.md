@@ -49,7 +49,7 @@ We might later see that `nlink` can be greater than 1 when we create symbolic
 links to the same file. Notice that `.` and `..` do not count towards `nlink`; 
 otherwise a directory may never get deleted.
 
-`size` is `0002 0000` which is basically `0x0000 0200` = 8192 bytes. The first
+`size` is `0002 0000` which is basically `0x0000 0200` = 512 bytes. The first
 address is `1d00 0000` which is basically `0x1d` = 29 (the first data block).
 
 The next 64 bytes represent the "welcome.txt" file.

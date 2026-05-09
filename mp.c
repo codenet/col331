@@ -46,6 +46,8 @@ mpsearch1(uint a, int len)
 // 1) in the first KB of the EBDA;
 // 2) in the last KB of system base memory;
 // 3) in the BIOS ROM between 0xE0000 and 0xFFFFF.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 static struct mp*
 mpsearch(void)
 {
@@ -65,6 +67,7 @@ mpsearch(void)
   }
   return mpsearch1(0xF0000, 0x10000);
 }
+#pragma GCC diagnostic pop
 
 // Search for an MP configuration table.  For now,
 // don't accept the default configurations (physaddr == 0).

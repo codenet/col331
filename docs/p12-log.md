@@ -67,4 +67,3 @@ This scheme works because writing blocks is **idempotent**. It is possible that
 the computer lost power just before clearing the log header block, i.e, the
 blocks were already written before crash. Rewriting them after reboot does not 
 matter since it writes the same content on the same block.
-

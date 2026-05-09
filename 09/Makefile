@@ -5,7 +5,7 @@ EXECS=threads-safe peterson-breaks mfence-perf swfence-perf peterson-fence atomi
 all: $(EXECS)
 
 clean:
-	rm $(EXECS)
+	rm -f $(EXECS) *.s
 
 threads-safe: threads-safe.c common.h common_threads.h
 	gcc $(CFLAGS) -o threads-safe threads-safe.c -Wall -pthread
@@ -47,9 +47,6 @@ alloc-attempt1: alloc-attempt1.c common.h common_threads.h
 
 alloc: alloc.c common.h common_threads.h
 	gcc $(CFLAGS) -o alloc alloc.c -Wall -pthread
-
-alloc-attempt1: alloc-attempt1.c common.h common_threads.h
-	gcc $(CFLAGS) -o alloc-attempt1 alloc-attempt1.c -Wall -pthread
 
 semlock: semlock.c common.h common_threads.h
 	gcc $(CFLAGS) -o semlock semlock.c -Wall -pthread

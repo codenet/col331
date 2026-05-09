@@ -51,7 +51,7 @@ System call handlers call methods like `argint` and `argstr` to read call
 arguments from user's stack. `argint` assumes that each argument is 32-bit
 (4 bytes long): it looks up process' stack pointer in the trapframe, adds four
 to ignore the return address, then adds the argument number
-* 4 to locate the position of the argument. `fetchint` verifies that the read is
+\* 4 to locate the position of the argument. `fetchint` verifies that the read is
 happening within the bounds of the process. This is important as otherwise the
 user process could set its `esp` register to arbitrary locations in memory and
 then make the system call. `fetchint` also adds process' offset to mimic the

@@ -2,7 +2,7 @@
 
 Now that our APICs are initialized and set up, we can start handling interrupts.
 In this part, we handle the periodic timer interrupts that we had set in
-`lapic.c`.  The interrupt handler in `trap.c` prints a message every time the
+`lapic.c`.  The interrupt handler in `trap.c` prints a message everytime the
 timer ticks.
 
 In `main.c`, we call `sti` to enable interrupt handling on CPU. However before
@@ -44,7 +44,7 @@ in the same order as defined in `struct trapframe` declared in `x86.h`. This
 handling interrupts, the trap handler calls `lapiceoi` to signal end of
 interrupt to the LAPIC. As per Section 10.8.5 Intel SDM Volume 3 Part A, this
 signals to the LAPIC that it can now issue the next interrupt, if any.  Spurious
-interrupts are defined in Section 11.9 of Intel SDM, Volume 3 Part A.
+interrupts are defined in Section 10.9 of Intel SDM, Volume 3 Part A.
 
 For all the other interrupts, we just panic and crash the OS. When `trap`
 returns, it falls back out to `trapasm.S` which recovers all the registers saved
@@ -55,16 +55,6 @@ hardware when the interrupt had happened.
 Why do we not call `lidt` directly in `tvinit`? Why do we have two separate
 methods?
 
-Later, when we enable multi-CPU support in our OS, only CPU zero will call
+Later when we enable multi-CPU support in our OS only CPU zero will call 
 `tvinit` to prepare the `idt` array, and then all the CPUs will call `lidt`.
 
-## Build note 
-
-On some systems, plain `make qemu` may fail with:
-- `/bin/sh: 1: [[: not found`
-- `array subscript ... is outside array bounds` in `mp.c`
-
-If that happens, run:
-
-```bash
-make qemu SHELL=/bin/bash MAC_CCFLAGS='-Wno-error=array-bounds -Wno-error=infinite-recursion'

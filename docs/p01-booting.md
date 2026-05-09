@@ -40,11 +40,11 @@ All the other segment registers are zero.
 `bootmain.c` has to now load the OS from the disk and give control to it. It
 first reads the next 4KB from the disk into memory location `0x10000`. The OS is
 stored in an *Executable and Linkable (ELF) format*. The format specifies a standard
-for how an executable is stored so that we can safely give control to it. This
+on how an executable is stored so that we can safely give control to it. This
 format enables us to move executables from one machine to another (assuming same
 ISA etc). Our OS is just another executable.
 
-The ELF file first has a header that should start with a magic string. This is
+The ELF file first has a header that should starts with a magic string. This is
 a mechanism to check whether the executable is corrupted. If the check passes, 
 we load the program into memory by reading more disk blocks and finally jump to
 the `entry` point as mentioned in the ELF file.

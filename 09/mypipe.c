@@ -19,8 +19,8 @@ void pipe_write(char c) {
 		pthread_cond_wait(&full, &m);
 	buf[writer] = c;
 	writer = (writer + 1)%SZ;
-	pthread_mutex_unlock(&m);
 	pthread_cond_signal(&empty);
+	pthread_mutex_unlock(&m);
 }
 
 char pipe_read() {
@@ -29,8 +29,8 @@ char pipe_read() {
 		pthread_cond_wait(&empty, &m);
 	char c = buf[reader];
 	reader = (reader + 1)%SZ;
-	pthread_mutex_unlock(&m);
 	pthread_cond_signal(&full);
+	pthread_mutex_unlock(&m);
 	return c;
 }
 

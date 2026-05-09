@@ -13,6 +13,7 @@ void *worker(void *arg) {
 	for (i = 0; i < loops; i++) {
 		counter++;
 		acounter++;
+		acounter *= 23;
 	}
 	return NULL;
 }
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
 	} 
 	loops = atoi(argv[1]);
 	pthread_t p1, p2;
+	acounter=0; counter=0;
 	Pthread_create(&p1, NULL, worker, NULL); 
 	Pthread_create(&p2, NULL, worker, NULL);
 	Pthread_join(p1, NULL);

@@ -1,9 +1,11 @@
-CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pie -O2
+CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pie -O3
 
-all: threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
+EXECS=threads-safe peterson-breaks mfence-perf swfence-perf peterson-fence atomic wait-attempt1 wait-attempt2 wait mypipe alloc-attempt1 alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
+
+all: $(EXECS)
 
 clean:
-	rm threads-safe peterson-breaks peterson-fence atomic wait mypipe alloc semlock wait-sem sempipe sem-mpmc dine-dead dine rw-ctr rw-using-sems sems-using-lock-cv dead dead-fix
+	rm -f $(EXECS) *.s
 
 threads-safe: threads-safe.c common.h common_threads.h
 	gcc $(CFLAGS) -o threads-safe threads-safe.c -Wall -pthread
@@ -11,6 +13,14 @@ threads-safe: threads-safe.c common.h common_threads.h
 peterson-breaks: peterson-breaks.c common.h common_threads.h
 	gcc $(CFLAGS) -S peterson-breaks.c -Wall -pthread
 	gcc $(CFLAGS) -o peterson-breaks peterson-breaks.c -Wall -pthread
+
+mfence-perf: mfence-perf.c common.h common_threads.h
+	gcc $(CFLAGS) -S mfence-perf.c -Wall -pthread
+	gcc $(CFLAGS) -o mfence-perf mfence-perf.c -Wall -pthread
+
+swfence-perf: swfence-perf.c common.h common_threads.h
+	gcc $(CFLAGS) -S swfence-perf.c -Wall -pthread
+	gcc $(CFLAGS) -o swfence-perf swfence-perf.c -Wall -pthread
 
 peterson-fence: peterson-fence.c common.h common_threads.h
 	gcc $(CFLAGS) -S peterson-fence.c -Wall -pthread
@@ -20,11 +30,20 @@ atomic: atomic.c common.h common_threads.h
 	gcc $(CFLAGS) -S atomic.c -Wall -pthread
 	gcc $(CFLAGS) -o atomic atomic.c -Wall -pthread
 
+wait-attempt1: wait-attempt1.c common.h common_threads.h
+	gcc $(CFLAGS) -o wait-attempt1 wait-attempt1.c -Wall -pthread
+
+wait-attempt2: wait-attempt2.c common.h common_threads.h
+	gcc $(CFLAGS) -o wait-attempt2 wait-attempt2.c -Wall -pthread
+
 wait: wait.c common.h common_threads.h
 	gcc $(CFLAGS) -o wait wait.c -Wall -pthread
 
 mypipe: mypipe.c common.h common_threads.h
 	gcc $(CFLAGS) -o mypipe mypipe.c -Wall -pthread
+
+alloc-attempt1: alloc-attempt1.c common.h common_threads.h
+	gcc $(CFLAGS) -o alloc-attempt1 alloc-attempt1.c -Wall -pthread
 
 alloc: alloc.c common.h common_threads.h
 	gcc $(CFLAGS) -o alloc alloc.c -Wall -pthread

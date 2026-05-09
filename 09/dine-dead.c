@@ -14,16 +14,16 @@ void* dine(void* arg) {
 	while(1) {
 		printf("id: %d\n", *id);
 
-		sem_wait(&forks[right(*id)]);
+		sem_wait(&forks[right(*id)]);	// Pick right
 		printf("id: %d got right\n", *id);
 
 		sleep(*id);
 
-		sem_wait(&forks[left(*id)]);
+		sem_wait(&forks[left(*id)]);	// Then pick left
 		printf("id: %d got left\n", *id);
 
-		sem_post(&forks[left(*id)]);
-		sem_post(&forks[right(*id)]);
+		sem_post(&forks[left(*id)]);	// Leave left
+		sem_post(&forks[right(*id)]);	// Then leave right
 		printf("id: %d released both\n", *id);
 	}
 	return NULL;

@@ -24,6 +24,7 @@ void* transfer(void* arg) {
 	txn_t* t = (txn_t*) arg;
 	printf("%d src: %d dst: %d\n", t->id, t->src->id, t->dst->id);
 
+	// Locking discipline: hold lock for lesser account ID first
 	if(t->src->id < t->dst->id) {
 		pthread_mutex_lock(&t->src->lock);
 		printf("%d got src: %d\n", t->id, t->src->id);

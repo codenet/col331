@@ -48,8 +48,7 @@ main(void)
   initlog(ROOTDEV);  // Initialize log
   cli();           // disable interrupts
 
-  struct inode console;
-  mknod(&console, "console", CONSOLE, CONSOLE);
+  mknod("console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
   pinit();         // first process
   scheduler();     // start running processes

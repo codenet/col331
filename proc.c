@@ -122,17 +122,20 @@ scheduler(void)
   c->proc = 0;
   
   for(;;){
+    sti();
     // Loop over process table looking for process to run.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      // Switch to chosen process. 
+      // Switch to chosen process.
+      cli(); 
       c->proc = p;
       p->state = RUNNING;
 
       switchuvm(p);
       swtch(&(c->scheduler), p->context);
+      sti();
     }
   }
 }

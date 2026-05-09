@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 
 def send_notification(web_hook, pay_load):
     resp = requests.post(web_hook, json=pay_load)
@@ -39,7 +40,7 @@ def get_discord_payload_v0(title, url, author, branch):
         ]
     }
     
-    return
+    return payload
     
 def get_discord_payload_v1(title, url, author, branch, number):
     payload = {
@@ -71,15 +72,20 @@ def get_discord_payload_v1(title, url, author, branch, number):
 
 event = os.environ.get("EVENT_NAME")
 web_hook = os.environ["WEBHOOK"] # Discord Webhook URL presented as an environment variable
+NEW_PART = "newpart"
 
 if event == "pull_request_target":
     merged = (os.environ.get("PR_MERGED") == "true")
-    
+    labels = [label["name"] for label in json.loads(os.environ.get("PR_LABELS", "[]"))]
     # Only act notify if the pull request is merged
     if not merged:
         print("Pull request is not merged. No notification will be sent.")
         exit(0)
         
+    if NEW_PART not in labels:
+        print(f"Pull request does not have the '{NEW_PART}' label. No notification will be sent.")
+        exit(0)
+    
     pr_title  = os.environ.get("PR_TITLE")
     pr_url    = os.environ.get("PR_URL")
     pr_author = os.environ.get("PR_AUTHOR")

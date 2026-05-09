@@ -21,6 +21,8 @@ welcome(void) {
   int n = readi(wtxt, greet, 0, st.size);
   cprintf("Read %d bytes from welcome.txt\n", n);
   cprintf("%s\n", greet);
+
+  irelse(wtxt);
 }
 
 // Bootstrap processor starts running C code here.

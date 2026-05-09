@@ -24,6 +24,7 @@ void            iread(struct inode*);
 struct inode*   iget(uint dev, uint inum);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
+void            irelse(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);

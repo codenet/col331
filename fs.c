@@ -65,7 +65,7 @@ iinit(int dev)
           sb.bmapstart);
 }
 
-static void
+void
 irelse(struct inode *ip)
 {
   ip->ref--;

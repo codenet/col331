@@ -43,7 +43,7 @@ welcome(void) {
   if(!isdirempty(foo)) {
     panic("/foo should be empty");
   }
-
+  iput(foo);
   if((gtxt = open("/foo/hello.txt", O_RDONLY)) != 0) {
     panic("Could open /foo/hello.txt after unlinking");
   }

@@ -24,7 +24,7 @@ Every memory access goes through an address translation mechanism as shown in
 Figure 3.5. A logical address in `EIP` register is translated using the code
 segment. All stack based instructions use the stack segment. For example, the
 `push` and `pop` instructions and setting/getting `ESP` and `EBP` registers.
-Other memory instructions such as `mov` etc are translated using the data
+Other memory instructions such as `mov`, `lea` etc are translated using the data
 segment.
 
 Since the contents of GDT are used repeatedly in every address translation, the 
@@ -41,7 +41,7 @@ address translation.
 
 `info registers` also shows `GDT=00007c60 00000017`. This means that the base of
 GDT is at `7c60` and the size is `0x17=23`. Each entry in GDT is of 8 bytes.
-There are three entries; size locates the last byte of GDT which will be at GDT
+There are three entries; size locates the last bit of GDT which will be at GDT
 base + 8*3-1(=23). Now in gdb, we can run `x /24xb 0x7c60` to see 24 bytes
 starting at the base address of GDT.
 
@@ -63,7 +63,7 @@ little-endian.
 1. 2 least significant bytes represent two least significant bytes of limit:
 `0xffff`.
 2. Base address is split across the descriptor. Patching them together, we get
-base address of the segment as `0x00000000`.
+based address of the segment as `0x00000000`.
 3. The remaining thing is `0x9a 0xcf`. From this, we get:
 0xa
 * Type: 1010. From Table 3.1, means that this is a code segment which can be read

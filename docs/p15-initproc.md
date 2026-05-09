@@ -57,7 +57,7 @@ its code segment selector base set as `STARTPROC`.
 
 Virtualizing memory only partly solves the isolation problem. What stops a
 process from calling instructions like `lgdt` and `lidt` to take control of the
-memory segments and the interrupts? If a process wants to illegally overwrite OS
+memory segments and the interrupts. If a process wants to illegally overwrite OS
 code, it can setup its own GDT by calling `lgdt` like in `seginit` in `vm.c` to
 give itself permission to access other parts of memory.
 
@@ -68,7 +68,7 @@ number means that we have more privilege.
 
 Hardware determines the *current privilege level (CPL)* by the least significant
 two bits of the code selector register. Similarly, least significant two bits of
-data segments define *requested privilege level (RPL)* for the segment. This
+data segments define *required privilege level (RPL)* for the segment. This
 means that this data segment can be read/written by code running at a privilege
 level of RPL or higher (i.e, with CPL <= RPL). Similarly, *descriptor privilege
 level (DPL)* is also set in segment descriptor set in GDT. Note how `pinit`
@@ -76,7 +76,7 @@ initializes segment registers' last two bits with `DPL_USER`(= 3). `vm.c` also s
 segment descriptor entries to `DPL_USER`.
 
 With all this, hardware prevents a user program running at privilege level=3
-from switching its code segment to privilege level=0.  User programs are also *not
+switch its code segment to privilege level=0.  User programs are also *not
 allowed* to change GDT, IDT, etc. as they are *privileged instructions* (list of
 privileged instructions is given in Section 5.9 Intel SDM Volume 3A). If a user
 program tries to run these instructions a general protection fault is raised by

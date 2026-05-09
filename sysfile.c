@@ -197,7 +197,7 @@ sys_mknod(void)
     end_op();
     return -1;
   }
-  iput(ip);
+  iunlockput(ip);
   end_op();
   return 0;
 }

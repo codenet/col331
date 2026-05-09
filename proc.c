@@ -63,7 +63,15 @@ found:
   }
   p->sz = PGSIZE - KSTACKSIZE;
 
-  sp = (char*)(p->offset + PGSIZE);
+  // kstack lives on a different segment
+  if((p->kstack = kalloc()) == 0){
+    p->state = UNUSED;
+    kfree(p->offset);
+    p->offset = 0;
+    return 0;
+  }
+
+  sp = (char*)(p->kstack + PGSIZE);
 
   // Allocate kernel stack.
   p->kstack = sp - KSTACKSIZE;

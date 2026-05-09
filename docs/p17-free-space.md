@@ -12,12 +12,15 @@ a new process. Similarly, since processes may be stopping dynamically, we would
 also like to mark the memory owned by the process as free so that it can be
 given to the next process that starts.
 
+> We will see processes exitting in action later when we implement ZOMBIE
+processes.
+
 The OS manages free space in `kalloc.c` to facilitate dynamic allocation and
 deallocation of memory. `main.c` calls `kinit` which marks all the memory
 regions after the kernel was loaded as free. To avoid *fragmentation*, xv6 only
 allocates and de-allocates memory in `PGSIZE` chunks which we have set to 1MB
-(`PROCSIZE`). In a fragmented memory, we might have memory available, but we
-are unable to satisfy allocation requests.
+(equal to `PROCSIZE`). In a fragmented memory, we might have memory available,
+but we are unable to satisfy allocation requests.
 
 `kalloc.c` manages free regions as a linked list. Interestingly, the pointers of
 the linked list are stored in the free pages themselves as seen in `kfree()`.

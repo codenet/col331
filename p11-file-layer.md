@@ -1,3 +1,0 @@
-# Files
-
-Self study

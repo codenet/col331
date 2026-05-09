@@ -47,4 +47,4 @@ CFLAGS=-fcf-protection=none -fno-asynchronous-unwind-tables -m32 -fno-pie -no-pi
 	objdump -d 02.o > 02.dump
 
 clean:
-	rm *.o *.s *.dump
+	rm -f *.o *.s *.dump 02.main

@@ -105,11 +105,22 @@ ideintr(void)
   idequeue = b->qnext;
 
   // Read data if needed.
-  if(!(b->flags & B_DIRTY) && idewait(1) >= 0)
-    insl(0x1f0, b->data, BSIZE/4);
-
-  b->flags |= B_VALID;
-  b->flags &= ~B_DIRTY;
+  if(!(b->flags & B_DIRTY)) {
+    // it was a read, and we need to collect the data
+    if(idewait(1) >= 0) {
+      insl(0x1f0, b->data, BSIZE/4);
+      b->flags |= B_VALID;
+      // to be safe, not needed otherwise
+      b->flags &= ~B_DIRTY;
+    } else {
+      // PROBLEM SOLVED HERE!
+      panic("disk did not read properly. halting..bye.."); 
+    }
+  } else {
+    // this is entered if it is just a response interrupt to the write sent earlier
+    b->flags |= B_VALID;
+    b->flags &= ~B_DIRTY;
+  }
 
   // Start disk on next buf in queue.
   if(idequeue != 0)

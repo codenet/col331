@@ -64,9 +64,9 @@ bget(uint dev, uint blockno)
   }
 
   // Not cached; recycle an unused buffer.
-  // Even if refcnt==0, B_DIRTY indicates a buffer is in use
+  // refcnt == 0 ensures that the buffer is not in use. No need to check the B_DIRTY flag
   for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
-    if(b->refcnt == 0 && (b->flags & B_DIRTY) == 0) {
+    if(b->refcnt == 0) {
       b->dev = dev;
       b->blockno = blockno;
       b->flags = 0;

@@ -64,6 +64,6 @@ operations that we were not finished writing. `install_trans` writes the blocks
 from the log to their appropriate places and finally clears the header block. 
 
 This scheme works because writing blocks is **idempotent**. It is possible that
-the computer lost power just before clearing the log header block, i.e, the
+the computer lost power just before clearing the log header block, i.e., the
 blocks were already written before crash. Rewriting them after reboot does not 
 matter since it writes the same content on the same block.

@@ -90,7 +90,7 @@ pinit(void)
   p->tf->ss = p->tf->ds;
 
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE;
+  p->tf->esp = PROCSIZE<<12;  // top of process memory
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));

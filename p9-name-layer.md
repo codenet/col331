@@ -1,3 +1,0 @@
-## Name layer
-
-Self study

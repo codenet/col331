@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
 #include "common_threads.h"
 
 int counter = 0; 
@@ -16,7 +15,7 @@ void *worker(void *arg) {
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) { 
-		fprintf(stderr, "usage: threads <loops>\n"); 
+		fprintf(stderr, "usage: threads-notv <loops>\n"); 
 		exit(1); 
 	} 
 	loops = atoi(argv[1]);

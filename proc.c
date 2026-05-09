@@ -313,6 +313,8 @@ wait(void)
         pid = p->pid;
         kfree(p->offset); // Free the 1MB physical block
         p->offset = 0;
+        kfree(p->kstack);
+        p->kstack = 0;
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;

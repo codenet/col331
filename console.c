@@ -36,7 +36,7 @@ printint(int xx, int base, int sign)
     consputc(buf[i]);
 }
 
-// Print to the console. only understands %d, %x, %p, %s.
+// Print to the console. Only understands %d, %x, %p, %s.
 void
 cprintf(char *fmt, ...)
 {
@@ -87,9 +87,9 @@ void
 halt(void)
 {
   cprintf("Bye COL%d!\n\0", 331);
-  outw(0x602, 0x2000);
-  // For older versions of QEMU, 
-  outw(0xB002, 0x2000);
+  outw(0x604, 0x2000);
+  // For older versions of QEMU,
+  outw(0xB004, 0x2000);
   for(;;);
 }
 

@@ -341,7 +341,7 @@ readi(struct inode *ip, char *dst, uint off, uint n)
   uint tot, m;
   struct buf *bp;
 
-  if(off > ip->size || off + n < off || ip->nlink < 1)
+  if(off > ip->size || off + n < off)
     return -1;
   if(off + n > ip->size)
     n = ip->size - off;

@@ -58,13 +58,3 @@ methods?
 Later when we enable multi-CPU support in our OS only CPU zero will call 
 `tvinit` to prepare the `idt` array, and then all the CPUs will call `lidt`.
 
-## Build note 
-
-On some systems, plain `make qemu` may fail with:
-- `/bin/sh: 1: [[: not found`
-- `array subscript ... is outside array bounds` in `mp.c`
-
-If that happens, run:
-
-```bash
-make qemu SHELL=/bin/bash MAC_CCFLAGS='-Wno-error=array-bounds -Wno-error=infinite-recursion'

@@ -1,6 +1,6 @@
 ## File system
 
-File system is basically an on-disk linked data structure (tree) with
+File system is a basically an on-disk linked data structure (tree) with
 directories pointing to other directories and files. We need to define how the
 file contents and pointers are managed over disk blocks to define our file
 system.
@@ -18,13 +18,13 @@ in a hex editor, we see:
 This is the `struct superblock`:
 * `size` = `0x03e8` = 1,000 (`FSSIZE`). This indicates the number of blocks in
   the file system.
-* `nblocks`=`0x03cb` = 971. This indicates the number of available data blocks.
+* `nblock`=`0x03cb` = 971. This indicates the number of available data blocks.
   (more below).
 * `ninodes`=`0xc8` = 200. Hence, inodes are present in 200/8 = 25 blocks.
 * `nlog` = 0, `logstart`=2. Ignore this for now.
 * `inodestart`=2. This is saying that inodes start from the second block (right
   after the superblock).
-* `bmapstart`=`0x1c`=28. Free bitmap starts after all the 25 inodes.
+* `bmapstart`=`0x1c`=28. Free bit map starts after all the 25 inodes.
 
 1 boot block + 1 super block + number of data blocks + number of inode blocks
 (25) + number of bitmap blocks (2) = total number of blocks (1000). 
@@ -33,7 +33,8 @@ Bitmap blocks spend 1 bit to keep track of free data blocks. For 1000 total
 blocks, we need 1000 bits, i.e, 125 bytes. This can be represented in just 1 512
 byte block. But `mkfs.c` sets `nbitmap` to 2.
 
-So we get 971 data blocks. Data blocks start at block number 29, after free bitmap blocks.
+So we get 971 data blocks. Data blocks start at block number 29, after free bit
+map blocks.
 
 
 ```
@@ -43,6 +44,11 @@ So we get 971 data blocks. Data blocks start at block number 29, after free bitm
 This is the 64 bytes of the second inode representing the "/" directory. First
 two bytes is `0100` which is 1 in little-endian. This means that this file is a
 directory (`type` is `T_DIR`).  `major` and `minor` are both zero, `nlink` is 1.
+`nlink`>0 signifies that this inode is "live" and is not part of a deleted file.
+We might later see that `nlink` can be greater than 1 when we create symbolic
+links to the same file. Notice that `.` and `..` do not count towards `nlink`; 
+otherwise a directory may never get deleted.
+
 `size` is `0002 0000` which is basically `0x0000 0200` = 512 bytes. The first
 address is `1d00 0000` which is basically `0x1d` = 29 (the first data block).
 
@@ -83,14 +89,3 @@ Now, we read the data blocks for `welcome.txt` at data block = 30.
 ```
 
 We see that spaces, dots, and hash signs are in the data block of the file!
-
-## Build note 
-
-On some systems, plain `make qemu` may fail with:
-- `/bin/sh: 1: [[: not found`
-- `array subscript ... is outside array bounds` in `mp.c`
-
-If that happens, run:
-
-```bash
-make qemu SHELL=/bin/bash MAC_CCFLAGS='-Wno-error=array-bounds -Wno-error=infinite-recursion'

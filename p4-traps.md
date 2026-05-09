@@ -44,7 +44,7 @@ in the same order as defined in `struct trapframe` declared in `x86.h`. This
 handling interrupts, the trap handler calls `lapiceoi` to signal end of
 interrupt to the LAPIC. As per Section 10.8.5 Intel SDM Volume 3 Part A, this
 signals to the LAPIC that it can now issue the next interrupt, if any.  Spurious
-interrupts are defined in Section 10.9 of Intel SDM, Volume 3 Part A.
+interrupts are defined in Section 11.9 of Intel SDM, Volume 3 Part A.
 
 For all the other interrupts, we just panic and crash the OS. When `trap`
 returns, it falls back out to `trapasm.S` which recovers all the registers saved

@@ -160,6 +160,9 @@ void            uartputc(int);
 // vm.c
 void            seginit(void);
 void            switchuvm(struct proc*);
+pde_t*          setupkvm(void);
+void            kvmalloc(void);
+void            switchkvm(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

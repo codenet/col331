@@ -17,12 +17,13 @@ int
 main(void)
 {
   kinit(end, P2V(PHYSTOP)); // phys page allocator
+  consoleinit();   // console hardware  (moved up so early panics are visible)
+  uartinit();      // serial port       (moved up so early panics are visible)
+  kvmalloc();      // kernel page table
   mpinit();        // detect other processors
   lapicinit();     // interrupt controller
   picinit();       // disable pic
   ioapicinit();    // another interrupt controller
-  consoleinit();   // console hardware
-  uartinit();      // serial port
   ideinit();       // disk 
   tvinit();        // trap vectors
   binit();         // buffer cache

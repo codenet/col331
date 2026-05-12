@@ -128,7 +128,7 @@ pinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
   initproc = p;
 
   memmove(p->offset, _binary_initcode_start, (int)_binary_initcode_size);

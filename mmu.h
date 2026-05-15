@@ -13,6 +13,10 @@
 #define SEG_UCODE 3  // user code
 #define SEG_UDATA 4  // user data+stack
 
+// Privilege levels
+#define DPL_USER    0x3     // User privilege level
+#define DPL_KERN    0x0     // Kernel privilege level
+
 // cpu->gdt[NSEGS] holds the above segments.
 #define NSEGS     6
 

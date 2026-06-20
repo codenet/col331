@@ -70,14 +70,15 @@ found:
 
   // kstack lives on a different segment
   if((p->kstack = kalloc()) == 0){
+    kfree(p->offset);   // don't leak the offset page
+    p->offset = 0;
     p->state = UNUSED;
     return 0;
   }
 
-  sp = (char*)(p->kstack + PGSIZE);
-
-  // Allocate kernel stack.
-  p->kstack = sp - KSTACKSIZE;
+  // p->kstack keeps the page-aligned base (needed by kfree in wait()).
+  // Use a local sp for all stack-pointer arithmetic.
+  sp = p->kstack + PGSIZE;
 
   // Leave room for trap frame.
   sp -= sizeof *p->tf;

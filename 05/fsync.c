@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <string.h>
 
+#define ITER 1000
 #define BUF_LEN 20
 
 int main(int argc, char *argv[]) {
@@ -13,7 +14,7 @@ int main(int argc, char *argv[]) {
 	assert(fd >= 0);
 	char buffer[BUF_LEN];
 	sprintf(buffer, "hello world\n");
-	for(int i = 0; i < 100; i++) {
+	for(int i = 0; i < ITER; i++) {
 		int rc = write(fd, buffer, strlen(buffer));
 		assert(rc == (strlen(buffer)));
 		fsync(fd);

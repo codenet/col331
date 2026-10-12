@@ -46,7 +46,6 @@ main(void)
   sti();           // enable interrupts
   iinit(ROOTDEV);  // Read superblock to start reading inodes
   initlog(ROOTDEV);  // Initialize log
-  cli();           // disable interrupts
 
   mknod("console", CONSOLE, CONSOLE);
   seginit();       // segment descriptors
